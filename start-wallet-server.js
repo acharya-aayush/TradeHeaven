@@ -1,11 +1,14 @@
+import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const { spawn } = require('child_process');
-const path = require('path');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 console.log('Starting TradeHeaven Wallet Server...');
 
 // Use absolute path to ensure server starts correctly regardless of current directory
-const serverPath = path.join(__dirname, 'src', 'server', 'index.js');
+const serverPath = join(__dirname, 'src', 'server', 'index.js');
 const server = spawn('node', [serverPath]);
 
 server.stdout.on('data', (data) => {
