@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Info } from "lucide-react";
+import { getWalletBalance, WalletData } from "@/services/walletService";
+import { placeOrder } from "@/services/orderService";
 
 interface OrderFormProps {
   symbol?: string;
@@ -26,42 +30,112 @@ const OrderForm: React.FC<OrderFormProps> = ({
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [quantity, setQuantity] = useState<string>('1');
   const [price, setPrice] = useState<string>(currentPrice.toFixed(2));
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Load wallet data when component mounts
+  useEffect(() => {
+    const loadWallet = async () => {
+      try {
+        const walletData = await getWalletBalance();
+        setWallet(walletData);
+        setError(null);
+      } catch (err: any) {
+        console.error('Failed to load wallet:', err);
+        setError('Failed to load wallet information. Please check if the wallet server is running.');
+      }
+    };
+
+    loadWallet();
+  }, []);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Validate order
-    if (parseInt(quantity) <= 0) {
+    try {
+      // Validate order
+      if (parseInt(quantity) <= 0) {
+        toast({
+          title: "Invalid quantity",
+          description: "Quantity must be greater than 0",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+      
+      if (orderType !== 'market' && (isNaN(parseFloat(price)) || parseFloat(price) <= 0)) {
+        toast({
+          title: "Invalid price",
+          description: "Please enter a valid price",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check available balance for buy orders
+      if (side === 'buy' && wallet) {
+        const orderValue = parseInt(quantity) * (orderType === 'market' ? currentPrice : parseFloat(price));
+        const availableBalance = wallet.balance - wallet.collateral_locked;
+        
+        if (orderValue > availableBalance) {
+          toast({
+            title: "Insufficient funds",
+            description: `You need ${formatCurrency(orderValue)} but only have ${formatCurrency(availableBalance)} available.`,
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Place order
+      const response = await placeOrder(
+        symbol,
+        side,
+        orderType,
+        parseInt(quantity),
+        orderType !== 'market' ? parseFloat(price) : undefined
+      );
+      
+      // Handle response
+      if (response.success) {
+        toast({
+          title: "Order placed successfully",
+          description: `${side.toUpperCase()} ${quantity} shares of ${symbol} at ${
+            orderType === 'market' ? 'market price' : `$${price}`
+          }`,
+        });
+        
+        // Reload wallet to get updated balance
+        const walletData = await getWalletBalance();
+        setWallet(walletData);
+        
+        // Reset form for next order
+        setQuantity('1');
+        if (orderType !== 'market') {
+          setPrice(currentPrice.toFixed(2));
+        }
+      } else {
+        toast({
+          title: "Failed to place order",
+          description: response.error || "An unknown error occurred",
+          variant: "destructive"
+        });
+      }
+    } catch (err: any) {
+      console.error('Order submission error:', err);
       toast({
-        title: "Invalid quantity",
-        description: "Quantity must be greater than 0",
+        title: "Order submission failed",
+        description: err.message || "An unknown error occurred",
         variant: "destructive"
       });
-      return;
-    }
-    
-    if (orderType !== 'market' && (isNaN(parseFloat(price)) || parseFloat(price) <= 0)) {
-      toast({
-        title: "Invalid price",
-        description: "Please enter a valid price",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Simulate order submission
-    toast({
-      title: "Order submitted",
-      description: `${side.toUpperCase()} ${quantity} shares of ${symbol} at ${
-        orderType === 'market' ? 'market price' : `$${price}`
-      }`,
-    });
-    
-    // Reset form for next order
-    setQuantity('1');
-    if (orderType !== 'market') {
-      setPrice(currentPrice.toFixed(2));
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -71,6 +145,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
     const priceValue = orderType === 'market' ? currentPrice : (parseFloat(price) || 0);
     return (qty * priceValue).toFixed(2);
   };
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return `$${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+  };
   
   return (
     <Card className="h-full">
@@ -78,6 +157,26 @@ const OrderForm: React.FC<OrderFormProps> = ({
         <CardTitle className="text-lg font-medium">Place Order</CardTitle>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {wallet && (
+          <Alert variant="default" className="mb-4 bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertTitle>Wallet Balance</AlertTitle>
+            <AlertDescription>
+              Available: {formatCurrency(wallet.balance - wallet.collateral_locked)}
+              <br />
+              Locked as Collateral: {formatCurrency(wallet.collateral_locked)}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <Tabs defaultValue="buy" className="w-full">
           <TabsList className="grid grid-cols-2 mb-4">
             <TabsTrigger value="buy" onClick={() => setSide('buy')}>Buy</TabsTrigger>
@@ -152,8 +251,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
                 type="submit"
                 className="w-full"
                 variant={side === 'buy' ? 'default' : 'destructive'}
+                disabled={loading || !wallet}
               >
-                {side === 'buy' ? 'Buy' : 'Sell'} {symbol}
+                {loading ? 'Processing...' : side === 'buy' ? 'Buy' : 'Sell'} {symbol}
               </Button>
             </div>
           </form>

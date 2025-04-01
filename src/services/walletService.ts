@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { ensureServerRunning } from '@/utils/serverManager';
 
 // Base API URL
 const API_URL = 'http://localhost:3001';
@@ -45,7 +46,8 @@ export const checkServerStatus = async (): Promise<boolean> => {
 // Get wallet balance
 export const getWalletBalance = async (): Promise<WalletData> => {
   try {
-    const serverRunning = await checkServerStatus();
+    // Ensure server is running before making request
+    const serverRunning = await ensureServerRunning();
     if (!serverRunning) {
       throw new Error('Wallet server is not running. Please start the server with "node start-wallet-server.js"');
     }
@@ -61,6 +63,9 @@ export const getWalletBalance = async (): Promise<WalletData> => {
 // Load funds to wallet
 export const loadFunds = async (amount: number): Promise<ApiResponse> => {
   try {
+    // Ensure server is running before making request
+    await ensureServerRunning();
+    
     const response = await axios.post(`${API_URL}/wallet/load`, { amount });
     return response.data;
   } catch (error: any) {
@@ -75,6 +80,9 @@ export const loadFunds = async (amount: number): Promise<ApiResponse> => {
 // Withdraw funds from wallet
 export const withdrawFunds = async (amount: number): Promise<ApiResponse> => {
   try {
+    // Ensure server is running before making request
+    await ensureServerRunning();
+    
     const response = await axios.post(`${API_URL}/wallet/withdraw`, { amount });
     return response.data;
   } catch (error: any) {
@@ -89,6 +97,9 @@ export const withdrawFunds = async (amount: number): Promise<ApiResponse> => {
 // Lock collateral for an order
 export const lockCollateral = async (amount: number, orderId?: string): Promise<ApiResponse> => {
   try {
+    // Ensure server is running before making request
+    await ensureServerRunning();
+    
     const response = await axios.post(`${API_URL}/wallet/collateral/lock`, { amount, orderId });
     return response.data;
   } catch (error: any) {
@@ -103,6 +114,9 @@ export const lockCollateral = async (amount: number, orderId?: string): Promise<
 // Release collateral
 export const releaseCollateral = async (amount: number, orderId?: string): Promise<ApiResponse> => {
   try {
+    // Ensure server is running before making request
+    await ensureServerRunning();
+    
     const response = await axios.post(`${API_URL}/wallet/collateral/release`, { amount, orderId });
     return response.data;
   } catch (error: any) {
@@ -117,6 +131,9 @@ export const releaseCollateral = async (amount: number, orderId?: string): Promi
 // Get transaction history
 export const getTransactionHistory = async (): Promise<Transaction[]> => {
   try {
+    // Ensure server is running before making request
+    await ensureServerRunning();
+    
     const response = await axios.get(`${API_URL}/transactions`);
     return response.data;
   } catch (error) {

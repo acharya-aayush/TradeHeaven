@@ -1,39 +1,23 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { ordersData } from '@/lib/data/mockData';
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle, XCircle, Filter, Plus } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import OrderForm from '@/components/trading/OrderForm';
+import OrderTabs from '@/components/orders/OrderTabs';
+import { useOrders } from '@/hooks/useOrders';
 
 const Orders = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  
-  // Filter orders based on active tab
-  const filteredOrders = activeTab === 'all' 
-    ? ordersData 
-    : ordersData.filter(order => {
-        if (activeTab === 'open') return order.status === 'open';
-        if (activeTab === 'filled') return order.status === 'filled';
-        if (activeTab === 'canceled') return order.status === 'canceled' || order.status === 'rejected';
-        return true;
-      });
-  
-  // Format date
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric',
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-  };
+  const {
+    orders,
+    loading,
+    error,
+    activeTab,
+    setActiveTab,
+    handleCancelOrder,
+    formatDate
+  } = useOrders();
   
   return (
     <AppShell>
@@ -54,62 +38,15 @@ const Orders = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-4 w-full max-w-md mb-4">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="open">Open</TabsTrigger>
-                  <TabsTrigger value="filled">Filled</TabsTrigger>
-                  <TabsTrigger value="canceled">Canceled</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value={activeTab} className="mt-0">
-                  <div className="rounded-md border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date & Time</TableHead>
-                          <TableHead>Symbol</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Side</TableHead>
-                          <TableHead>Quantity</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell>{formatDate(order.timestamp)}</TableCell>
-                            <TableCell className="font-medium">{order.symbol}</TableCell>
-                            <TableCell className="capitalize">{order.type}</TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={order.side === 'buy' ? 'default' : 'destructive'}
-                                className="capitalize"
-                              >
-                                {order.side}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{order.quantity}</TableCell>
-                            <TableCell className="font-mono">
-                              {order.price ? `$${order.price.toFixed(2)}` : 'Market'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                {order.status === 'open' && <Clock className="h-4 w-4 text-yellow-500" />}
-                                {order.status === 'filled' && <CheckCircle className="h-4 w-4 text-market-up" />}
-                                {(order.status === 'canceled' || order.status === 'rejected') && 
-                                  <XCircle className="h-4 w-4 text-market-down" />}
-                                <span className="capitalize">{order.status}</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <OrderTabs
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                orders={orders}
+                loading={loading}
+                error={error}
+                handleCancelOrder={handleCancelOrder}
+                formatDate={formatDate}
+              />
             </CardContent>
           </Card>
         </div>
