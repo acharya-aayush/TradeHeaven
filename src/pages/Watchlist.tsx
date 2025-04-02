@@ -1,29 +1,60 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { watchlistData, stocksData } from '@/lib/data/mockData';
+import { stocksData } from '@/lib/data/mockData';
 import StockChart from '@/components/trading/StockChart';
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown, Bell, Edit, Trash2 } from 'lucide-react';
-import { Input } from "@/components/ui/input";
+import { TrendingUp, TrendingDown, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
-// Simulate multiple watchlists
-const watchlists = [
-  { id: 'default', name: 'Default Watchlist', stocks: watchlistData },
-  { id: 'tech', name: 'Tech Stocks', stocks: watchlistData.filter(item => ['AAPL', 'MSFT', 'GOOGL'].includes(item.symbol)) },
-  { id: 'growth', name: 'Growth Stocks', stocks: watchlistData.filter(item => ['TSLA', 'NVDA'].includes(item.symbol)) }
-];
+import { useWatchlists } from '@/hooks/useWatchlists';
+import { useAlerts } from '@/hooks/useAlerts';
+import DraggableWatchlistTable from '@/components/watchlist/DraggableWatchlistTable';
+import WatchlistSettings from '@/components/watchlist/WatchlistSettings';
+import AlertDialog from '@/components/watchlist/AlertDialog';
+import StockSearch from '@/components/watchlist/StockSearch';
 
 const Watchlist = () => {
-  const [selectedStock, setSelectedStock] = useState(watchlistData[0]);
-  const [activeWatchlist, setActiveWatchlist] = useState(watchlists[0]);
+  const { 
+    watchlists, 
+    activeWatchlist, 
+    loading: watchlistsLoading, 
+    error: watchlistsError,
+    setActiveWatchlistById,
+    handleCreateWatchlist,
+    handleUpdateWatchlist,
+    handleDeleteWatchlist,
+    handleAddStock,
+    handleRemoveStock,
+    handleReorderWatchlist
+  } = useWatchlists();
+
+  const {
+    handleCreateAlert
+  } = useAlerts();
+
+  const [selectedStock, setSelectedStock] = useState(stocksData[0]);
   const { toast } = useToast();
+  
+  // Get the stocks data for the active watchlist
+  const watchlistStocks = useMemo(() => {
+    if (!activeWatchlist) return [];
+    
+    const symbols = activeWatchlist.stocks || 
+                  (activeWatchlist.items?.map(item => item.symbol) || []);
+    
+    return stocksData.filter(stock => symbols.includes(stock.symbol));
+  }, [activeWatchlist]);
+  
+  // Set the first stock as selected when watchlist changes
+  useEffect(() => {
+    if (watchlistStocks.length > 0 && (!selectedStock || !watchlistStocks.some(s => s.symbol === selectedStock.symbol))) {
+      setSelectedStock(watchlistStocks[0]);
+    }
+  }, [watchlistStocks, selectedStock]);
   
   const handleAddAlert = (symbol: string) => {
     toast({
@@ -37,8 +68,8 @@ const Watchlist = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="lg:col-span-2">
           <StockChart 
-            symbol={selectedStock.symbol} 
-            name={selectedStock.name} 
+            symbol={selectedStock?.symbol || ''} 
+            name={selectedStock?.name || ''} 
           />
         </div>
         
@@ -48,106 +79,114 @@ const Watchlist = () => {
               <CardTitle className="text-lg font-medium">Stock Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-2xl font-bold">{selectedStock.symbol}</h2>
-                  <p className="text-muted-foreground">{selectedStock.name}</p>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-mono">${selectedStock.price.toFixed(2)}</span>
-                  <span className={`flex items-center ${
-                    selectedStock.change >= 0 ? 'text-market-up' : 'text-market-down'
-                  }`}>
-                    {selectedStock.change >= 0 ? (
-                      <TrendingUp className="h-5 w-5 mr-1" />
-                    ) : (
-                      <TrendingDown className="h-5 w-5 mr-1" />
-                    )}
-                    <span>
-                      {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)} ({selectedStock.change >= 0 ? '+' : ''}{selectedStock.changePercent.toFixed(2)}%)
+              {selectedStock ? (
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedStock.symbol}</h2>
+                    <p className="text-muted-foreground">{selectedStock.name}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-mono">${selectedStock.price.toFixed(2)}</span>
+                    <span className={`flex items-center ${
+                      selectedStock.change >= 0 ? 'text-market-up' : 'text-market-down'
+                    }`}>
+                      {selectedStock.change >= 0 ? (
+                        <TrendingUp className="h-5 w-5 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-5 w-5 mr-1" />
+                      )}
+                      <span>
+                        {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)} ({selectedStock.change >= 0 ? '+' : ''}{selectedStock.changePercent.toFixed(2)}%)
+                      </span>
                     </span>
-                  </span>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <AlertDialog 
+                      symbol={selectedStock.symbol}
+                      stockPrice={selectedStock.price}
+                      onCreateAlert={handleCreateAlert}
+                    />
+                    
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="gap-1">
+                          <Plus className="h-4 w-4" />
+                          Add Order
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Place Order for {selectedStock.symbol}</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <Tabs defaultValue="buy">
+                            <TabsList className="grid grid-cols-2 mb-4">
+                              <TabsTrigger value="buy">Buy</TabsTrigger>
+                              <TabsTrigger value="sell">Sell</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="buy">
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Quantity</label>
+                                  <Input type="number" min="1" defaultValue="1" />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Order Type</label>
+                                  <Input type="text" defaultValue="Market" readOnly />
+                                </div>
+                                <div className="flex justify-between items-center pt-2">
+                                  <span>Estimated Cost:</span>
+                                  <span className="font-mono">${selectedStock.price.toFixed(2)}</span>
+                                </div>
+                                <Button className="w-full" onClick={() => {
+                                  toast({
+                                    title: "Order Placed",
+                                    description: `Buy order for ${selectedStock.symbol} has been submitted`,
+                                  });
+                                }}>
+                                  Place Buy Order
+                                </Button>
+                              </div>
+                            </TabsContent>
+                            
+                            <TabsContent value="sell">
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Quantity</label>
+                                  <Input type="number" min="1" defaultValue="1" />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Order Type</label>
+                                  <Input type="text" defaultValue="Market" readOnly />
+                                </div>
+                                <div className="flex justify-between items-center pt-2">
+                                  <span>Estimated Proceeds:</span>
+                                  <span className="font-mono">${selectedStock.price.toFixed(2)}</span>
+                                </div>
+                                <Button variant="destructive" className="w-full" onClick={() => {
+                                  toast({
+                                    title: "Order Placed",
+                                    description: `Sell order for ${selectedStock.symbol} has been submitted`,
+                                  });
+                                }}>
+                                  Place Sell Order
+                                </Button>
+                              </div>
+                            </TabsContent>
+                          </Tabs>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
-                
-                <div className="flex gap-2">
-                  <Button onClick={() => handleAddAlert(selectedStock.symbol)} variant="outline" className="gap-1">
-                    <Bell className="h-4 w-4" />
-                    Set Alert
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="gap-1">
-                        <Plus className="h-4 w-4" />
-                        Add Order
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Place Order for {selectedStock.symbol}</DialogTitle>
-                      </DialogHeader>
-                      <div className="py-4">
-                        <Tabs defaultValue="buy">
-                          <TabsList className="grid grid-cols-2 mb-4">
-                            <TabsTrigger value="buy">Buy</TabsTrigger>
-                            <TabsTrigger value="sell">Sell</TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="buy">
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium mb-1 block">Quantity</label>
-                                <Input type="number" min="1" defaultValue="1" />
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium mb-1 block">Order Type</label>
-                                <Input type="text" defaultValue="Market" readOnly />
-                              </div>
-                              <div className="flex justify-between items-center pt-2">
-                                <span>Estimated Cost:</span>
-                                <span className="font-mono">${selectedStock.price.toFixed(2)}</span>
-                              </div>
-                              <Button className="w-full" onClick={() => {
-                                toast({
-                                  title: "Order Placed",
-                                  description: `Buy order for ${selectedStock.symbol} has been submitted`,
-                                });
-                              }}>
-                                Place Buy Order
-                              </Button>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="sell">
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium mb-1 block">Quantity</label>
-                                <Input type="number" min="1" defaultValue="1" />
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium mb-1 block">Order Type</label>
-                                <Input type="text" defaultValue="Market" readOnly />
-                              </div>
-                              <div className="flex justify-between items-center pt-2">
-                                <span>Estimated Proceeds:</span>
-                                <span className="font-mono">${selectedStock.price.toFixed(2)}</span>
-                              </div>
-                              <Button variant="destructive" className="w-full" onClick={() => {
-                                toast({
-                                  title: "Order Placed",
-                                  description: `Sell order for ${selectedStock.symbol} has been submitted`,
-                                });
-                              }}>
-                                Place Sell Order
-                              </Button>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Select a stock from your watchlist</p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -157,13 +196,13 @@ const Watchlist = () => {
         <CardHeader className="pb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-4">
             <CardTitle className="text-lg font-medium">Watchlists</CardTitle>
-            <Tabs value={activeWatchlist.id} onValueChange={(value) => {
-              const watchlist = watchlists.find(w => w.id === value);
-              if (watchlist) setActiveWatchlist(watchlist);
-            }}>
+            <Tabs 
+              value={activeWatchlist?.watchlist_id} 
+              onValueChange={setActiveWatchlistById}
+            >
               <TabsList>
                 {watchlists.map(watchlist => (
-                  <TabsTrigger key={watchlist.id} value={watchlist.id}>
+                  <TabsTrigger key={watchlist.watchlist_id} value={watchlist.watchlist_id}>
                     {watchlist.name}
                   </TabsTrigger>
                 ))}
@@ -172,84 +211,56 @@ const Watchlist = () => {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="h-8 gap-1">
-              <Edit className="h-4 w-4" />
-              <span>Edit</span>
-            </Button>
-            <Button variant="default" size="sm" className="h-8 gap-1">
-              <Plus className="h-4 w-4" />
-              <span>New Watchlist</span>
-            </Button>
+            <WatchlistSettings 
+              watchlists={watchlists}
+              activeWatchlistId={activeWatchlist?.watchlist_id || ''}
+              onCreateWatchlist={handleCreateWatchlist}
+              onUpdateWatchlist={handleUpdateWatchlist}
+              onDeleteWatchlist={handleDeleteWatchlist}
+            />
+            
+            <StockSearch 
+              onAddStock={(symbol) => {
+                if (activeWatchlist) {
+                  return handleAddStock(activeWatchlist.watchlist_id, symbol);
+                }
+                return Promise.reject('No active watchlist');
+              }}
+            />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Change</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeWatchlist.stocks.map((stock) => (
-                  <TableRow 
-                    key={stock.symbol}
-                    className="cursor-pointer hover:bg-accent"
-                    onClick={() => setSelectedStock(stock)}
-                  >
-                    <TableCell className="font-medium">{stock.symbol}</TableCell>
-                    <TableCell className="max-w-40 truncate">{stock.name}</TableCell>
-                    <TableCell className="font-mono">${stock.price.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <div className={`flex items-center ${
-                        stock.change >= 0 ? 'text-market-up' : 'text-market-down'
-                      }`}>
-                        {stock.change >= 0 ? (
-                          <TrendingUp className="h-4 w-4 mr-1" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 mr-1" />
-                        )}
-                        <span>
-                          {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddAlert(stock.symbol);
-                          }}
-                        >
-                          <Bell className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toast({
-                              title: "Stock Removed",
-                              description: `${stock.symbol} has been removed from your watchlist`,
-                            });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          {watchlistsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <p>Loading watchlists...</p>
+            </div>
+          ) : watchlistsError ? (
+            <div className="flex items-center justify-center py-8 text-destructive">
+              <p>{watchlistsError}</p>
+            </div>
+          ) : !activeWatchlist ? (
+            <div className="flex items-center justify-center py-8">
+              <p>No watchlist selected</p>
+            </div>
+          ) : (
+            <DraggableWatchlistTable 
+              stocks={watchlistStocks}
+              onSelectStock={setSelectedStock}
+              onReorderStocks={(symbols) => {
+                if (activeWatchlist) {
+                  handleReorderWatchlist(activeWatchlist.watchlist_id, symbols);
+                }
+              }}
+              onAddAlert={(symbol) => {
+                handleAddAlert(symbol);
+              }}
+              onRemoveStock={(symbol) => {
+                if (activeWatchlist) {
+                  handleRemoveStock(activeWatchlist.watchlist_id, symbol);
+                }
+              }}
+            />
+          )}
         </CardContent>
       </Card>
     </AppShell>

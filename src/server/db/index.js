@@ -3,6 +3,7 @@
 import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { initWatchlistSchema } from './schemas/watchlist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,6 +56,9 @@ const initDb = () => {
   if (!user) {
     db.prepare('INSERT INTO wallets (user_id, balance, collateral_locked) VALUES (?, ?, ?)').run('user1', 10000, 0);
   }
+
+  // Initialize watchlist schema
+  initWatchlistSchema();
 };
 
 export { db, initDb };

@@ -44,12 +44,17 @@ cd TradeHeaven
 npm install
 ```
 
-3. Start the wallet server:
+3. Install additional required dependencies:
+```bash
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+```
+
+4. Start the wallet server:
 ```bash
 node start-wallet-server.js
 ```
 
-4. Start the frontend development server:
+5. Start the frontend development server:
 ```bash
 npm run dev
 ```
@@ -62,7 +67,9 @@ The application will be available at `http://localhost:5173` (frontend) and `htt
 TradeHeaven/
 ├── src/                    # Source code
 │   ├── components/        # React components
+│   │   └── watchlist/    # Watchlist related components
 │   ├── server/           # Backend server code
+│   │   └── db/           # Database schemas and operations
 │   └── types/            # TypeScript type definitions
 ├── public/               # Static assets
 ├── app/                  # Next.js app directory
@@ -94,6 +101,13 @@ TradeHeaven/
 - System alerts
 - Status updates
 
+### 5. Watchlist Management
+- Create and manage custom watchlists
+- Drag-and-drop reordering of watchlist items
+- Real-time price updates
+- Customizable columns and layouts
+- Save watchlist preferences
+
 ## Technical Stack
 
 ### Frontend
@@ -104,6 +118,10 @@ TradeHeaven/
 - React Query
 - React Router DOM
 - Recharts (Data visualization)
+- @dnd-kit (Drag and drop functionality)
+  - @dnd-kit/core
+  - @dnd-kit/sortable
+  - @dnd-kit/utilities
 
 ### Backend
 - Express.js
@@ -141,6 +159,20 @@ Locks funds as collateral.
 #### POST /api/wallet/collateral/release
 Releases locked collateral.
 
+### Watchlist Endpoints
+
+#### GET /api/watchlist
+Retrieves the user's watchlist.
+
+#### POST /api/watchlist
+Adds a new item to the watchlist.
+
+#### PUT /api/watchlist/order
+Updates the order of watchlist items.
+
+#### DELETE /api/watchlist/:id
+Removes an item from the watchlist.
+
 ## Development Guidelines
 
 ### Code Style
@@ -162,6 +194,13 @@ Releases locked collateral.
 - Perform integration testing
 - Test error scenarios
 
+### SQLite Best Practices
+- Use INTEGER (0/1) instead of BOOLEAN for boolean values
+- Always use parameterized queries to prevent SQL injection
+- Handle database errors gracefully
+- Use transactions for operations that modify multiple tables
+- Close database connections properly
+
 ## Troubleshooting
 
 ### Common Issues
@@ -175,11 +214,25 @@ Releases locked collateral.
    - Verify SQLite database file permissions
    - Check database connection settings
    - Ensure proper table structure
+   - For boolean values, use INTEGER (0/1) instead of BOOLEAN
+   - Check for proper data types in SQL queries
 
 3. **Frontend Build Issues**
    - Clear node_modules and reinstall dependencies
    - Check for TypeScript compilation errors
    - Verify environment variables
+   - Ensure all required dependencies are installed (@dnd-kit packages)
+
+4. **Watchlist Drag and Drop Issues**
+   - Verify @dnd-kit packages are properly installed
+   - Check for any console errors
+   - Ensure proper event handlers are implemented
+
+5. **SQLite Type Binding Errors**
+   - SQLite3 can only bind numbers, strings, bigints, buffers, and null
+   - For boolean values, use 1 for true and 0 for false
+   - For dates, use TEXT format with ISO strings
+   - For arrays or objects, convert to JSON strings before storing
 
 ### Support
 
@@ -203,6 +256,7 @@ For additional support:
 - Caching strategies for frequently accessed data
 - Efficient state management
 - Optimized bundle size
+- Efficient drag and drop operations with @dnd-kit
 
 ## Future Enhancements
 
@@ -213,6 +267,11 @@ For additional support:
 5. Mobile responsiveness improvements
 6. Performance optimizations
 7. Additional payment gateway integrations
+8. Advanced watchlist features
+   - Multiple watchlists
+   - Watchlist sharing
+   - Custom alerts
+   - Technical analysis tools
 
 ---
 

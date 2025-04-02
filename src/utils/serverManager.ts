@@ -1,12 +1,24 @@
-
 import axios from 'axios';
 import { toast } from '@/components/ui/use-toast';
 import { spawn } from 'child_process';
 
 // Configuration
-const SERVER_URL = 'http://localhost:3001';
+const SERVER_URL = 'http://localhost:3002';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
+
+// Axios instance with default configuration
+const api = axios.create({
+  baseURL: SERVER_URL,
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+  },
+  withCredentials: true
+});
 
 let serverProcess: any = null;
 let isStarting = false;
@@ -17,11 +29,23 @@ let retryCount = 0;
  */
 export const checkServerStatus = async (): Promise<boolean> => {
   try {
-    await axios.get(`${SERVER_URL}/wallet`, { timeout: 3000 });
+    await api.get('/wallet');
     console.log('Wallet server is running');
     return true;
-  } catch (error) {
-    console.error('Wallet server connection failed');
+  } catch (error: any) {
+    if (error.code === 'ERR_BLOCKED_BY_CLIENT') {
+      console.error('Request blocked by client (possibly by an ad blocker). Please disable ad blocker for this site.');
+      toast({
+        title: "Connection Blocked",
+        description: "Please disable your ad blocker for this site to allow wallet server connections.",
+        variant: "destructive",
+        duration: 10000,
+      });
+    } else if (error.code === 'ECONNREFUSED') {
+      console.error('Wallet server connection failed - server not running');
+    } else {
+      console.error('Wallet server connection failed:', error.message);
+    }
     return false;
   }
 };

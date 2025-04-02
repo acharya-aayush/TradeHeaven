@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,9 +7,118 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Settings as SettingsIcon, Moon, Sun, Globe, Bell, Key, Lock, RefreshCw, Save, EyeOff, Smartphone, Layers, Code, FileDown, Shield, ArrowRight, PlusCircle, Clock as ClockIcon } from 'lucide-react';
+import ThemeSelector from '@/components/settings/ThemeSelector';
+import { Switch } from '@/components/ui/switch';
+
+// Define the settings type
+interface SettingsState {
+  // Appearance
+  theme: 'light' | 'dark' | 'system';
+  layout: 'default' | 'reversed';
+  density: 'compact' | 'default' | 'comfortable';
+  fontSize: 'small' | 'medium' | 'large' | 'xlarge';
+  
+  // Preferences
+  language: string;
+  timezone: string;
+  currency: string;
+  dateFormat: string;
+  
+  // Notifications
+  inAppNotifications: boolean;
+  orderExecutionNotifs: boolean;
+  priceAlerts: boolean;
+  newsUpdates: boolean;
+  marketOpenClose: boolean;
+  accountActivity: boolean;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  
+  // Email Notifications
+  securityAlertsEmail: boolean;
+  orderConfirmationsEmail: boolean;
+  accountStatementsEmail: boolean;
+  marketingEmailNotifs: boolean;
+  
+  // Push Notifications
+  priceAlertsPush: boolean;
+  orderStatusPush: boolean;
+  securityAlertsPush: boolean;
+  
+  // API
+  apiKey: string;
+  apiSecret: string;
+  apiEnabled: boolean;
+  
+  // Privacy & Security
+  twoFactorAuth: boolean;
+  sessionTimeout: number;
+  dataSharing: boolean;
+  locationTracking: boolean;
+  loginVerification: boolean;
+}
 
 const Settings = () => {
   const { toast } = useToast();
+  const [activeLayoutOption, setActiveLayoutOption] = useState<'default' | 'reversed'>('default');
+  const [activeDensityOption, setActiveDensityOption] = useState<'compact' | 'default' | 'comfortable'>('default');
+  const [activeFontSizeOption, setActiveFontSizeOption] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
+  
+  // Initialize settings state
+  const [settings, setSettings] = useState<SettingsState>({
+    // Appearance
+    theme: 'system',
+    layout: 'default',
+    density: 'default',
+    fontSize: 'medium',
+    
+    // Preferences
+    language: 'en',
+    timezone: 'UTC',
+    currency: 'USD',
+    dateFormat: 'MM/DD/YYYY',
+    
+    // Notifications
+    inAppNotifications: true,
+    orderExecutionNotifs: true,
+    priceAlerts: true,
+    newsUpdates: false,
+    marketOpenClose: true,
+    accountActivity: true,
+    emailNotifications: false,
+    pushNotifications: false,
+    
+    // Email Notifications
+    securityAlertsEmail: true,
+    orderConfirmationsEmail: true,
+    accountStatementsEmail: true,
+    marketingEmailNotifs: false,
+    
+    // Push Notifications
+    priceAlertsPush: true,
+    orderStatusPush: true,
+    securityAlertsPush: true,
+    
+    // API
+    apiKey: '',
+    apiSecret: '',
+    apiEnabled: false,
+    
+    // Privacy & Security
+    twoFactorAuth: false,
+    sessionTimeout: 30,
+    dataSharing: false,
+    locationTracking: false,
+    loginVerification: false,
+  });
+  
+  // Function to update settings
+  const updateSetting = (category: string, key: keyof SettingsState, value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   const handleSaveSettings = () => {
     toast({
@@ -41,37 +150,16 @@ const Settings = () => {
                 <CardDescription>Customize the look and feel of the application</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <Label>Color Theme</Label>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary data-[state=active]:border-primary data-[state=active]:bg-muted" data-state="active">
-                      <div className="flex gap-1">
-                        <Sun className="h-5 w-5" />
-                      </div>
-                      <span className="text-sm font-medium">Light</span>
-                    </div>
-                    
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
-                      <div className="flex gap-1">
-                        <Moon className="h-5 w-5" />
-                      </div>
-                      <span className="text-sm font-medium">Dark</span>
-                    </div>
-                    
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
-                      <div className="flex gap-1">
-                        <Sun className="h-5 w-5" />
-                        <Moon className="h-5 w-5" />
-                      </div>
-                      <span className="text-sm font-medium">System</span>
-                    </div>
-                  </div>
-                </div>
+                <ThemeSelector />
                 
                 <div className="space-y-3">
                   <Label>Dashboard Layout</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary data-[state=active]:border-primary data-[state=active]:bg-muted" data-state="active">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeLayoutOption === 'default' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveLayoutOption('default')}
+                      data-state={activeLayoutOption === 'default' ? 'active' : 'inactive'}
+                    >
                       <div className="w-full h-24 bg-muted rounded-md flex flex-col">
                         <div className="h-1/3 border-b border-border"></div>
                         <div className="flex-1 flex">
@@ -82,7 +170,11 @@ const Settings = () => {
                       <span className="text-sm font-medium">Default</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeLayoutOption === 'reversed' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveLayoutOption('reversed')}
+                      data-state={activeLayoutOption === 'reversed' ? 'active' : 'inactive'}
+                    >
                       <div className="w-full h-24 bg-muted rounded-md flex flex-col">
                         <div className="h-1/3 border-b border-border"></div>
                         <div className="flex-1 flex">
@@ -98,7 +190,11 @@ const Settings = () => {
                 <div className="space-y-3">
                   <Label>Density</Label>
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'compact' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveDensityOption('compact')}
+                      data-state={activeDensityOption === 'compact' ? 'active' : 'inactive'}
+                    >
                       <div className="w-full space-y-1">
                         <div className="h-2 bg-muted rounded-full"></div>
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -107,7 +203,11 @@ const Settings = () => {
                       <span className="text-sm font-medium">Compact</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary data-[state=active]:border-primary data-[state=active]:bg-muted" data-state="active">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'default' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveDensityOption('default')}
+                      data-state={activeDensityOption === 'default' ? 'active' : 'inactive'}
+                    >
                       <div className="w-full space-y-2">
                         <div className="h-2 bg-muted rounded-full"></div>
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -116,7 +216,11 @@ const Settings = () => {
                       <span className="text-sm font-medium">Default</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'comfortable' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveDensityOption('comfortable')}
+                      data-state={activeDensityOption === 'comfortable' ? 'active' : 'inactive'}
+                    >
                       <div className="w-full space-y-3">
                         <div className="h-2 bg-muted rounded-full"></div>
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -141,19 +245,35 @@ const Settings = () => {
                 <div className="space-y-3">
                   <Label>Font Size</Label>
                   <div className="grid grid-cols-4 gap-4">
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'small' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveFontSizeOption('small')}
+                      data-state={activeFontSizeOption === 'small' ? 'active' : 'inactive'}
+                    >
                       <span className="text-xs">Small</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary data-[state=active]:border-primary data-[state=active]:bg-muted" data-state="active">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'medium' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveFontSizeOption('medium')}
+                      data-state={activeFontSizeOption === 'medium' ? 'active' : 'inactive'}
+                    >
                       <span className="text-sm">Medium</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'large' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveFontSizeOption('large')}
+                      data-state={activeFontSizeOption === 'large' ? 'active' : 'inactive'}
+                    >
                       <span className="text-base">Large</span>
                     </div>
                     
-                    <div className="border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary">
+                    <div 
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'xlarge' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => setActiveFontSizeOption('xlarge')}
+                      data-state={activeFontSizeOption === 'xlarge' ? 'active' : 'inactive'}
+                    >
                       <span className="text-lg">Extra Large</span>
                     </div>
                   </div>
@@ -295,9 +415,10 @@ const Settings = () => {
                       <h4 className="font-medium text-base">In-App Notifications</h4>
                       <p className="text-sm text-muted-foreground">Control notifications within the application</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.inAppNotifications}
+                      onCheckedChange={(checked) => updateSetting('Notifications', 'inAppNotifications', checked)}
+                    />
                   </div>
                   
                   <div className="space-y-3 border-b pb-4">
@@ -306,9 +427,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Order Execution</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.orderExecutionNotifs}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'orderExecutionNotifs', checked)}
+                        disabled={!settings.inAppNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -316,9 +439,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Price Alerts</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.priceAlerts}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'priceAlerts', checked)}
+                        disabled={!settings.inAppNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -326,9 +451,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Account Updates</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.accountActivity}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'accountActivity', checked)}
+                        disabled={!settings.inAppNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -336,9 +463,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Market News</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-muted relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute left-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.newsUpdates}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'newsUpdates', checked)}
+                        disabled={!settings.inAppNotifications}
+                      />
                     </div>
                   </div>
                 </div>
@@ -349,9 +478,10 @@ const Settings = () => {
                       <h4 className="font-medium text-base">Email Notifications</h4>
                       <p className="text-sm text-muted-foreground">Control notifications sent to your email</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.emailNotifications}
+                      onCheckedChange={(checked) => updateSetting('Notifications', 'emailNotifications', checked)}
+                    />
                   </div>
                   
                   <div className="space-y-3 border-b pb-4">
@@ -360,9 +490,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Security Alerts</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.securityAlertsEmail}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'securityAlertsEmail', checked)}
+                        disabled={!settings.emailNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -370,9 +502,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Order Confirmations</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.orderConfirmationsEmail}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'orderConfirmationsEmail', checked)}
+                        disabled={!settings.emailNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -380,9 +514,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Account Statements</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.accountStatementsEmail}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'accountStatementsEmail', checked)}
+                        disabled={!settings.emailNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -390,9 +526,11 @@ const Settings = () => {
                         <Bell className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Marketing & Promotions</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-muted relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute left-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.marketingEmailNotifs}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'marketingEmailNotifs', checked)}
+                        disabled={!settings.emailNotifications}
+                      />
                     </div>
                   </div>
                 </div>
@@ -403,9 +541,10 @@ const Settings = () => {
                       <h4 className="font-medium text-base">Mobile Push Notifications</h4>
                       <p className="text-sm text-muted-foreground">Control notifications on your mobile device</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.pushNotifications}
+                      onCheckedChange={(checked) => updateSetting('Notifications', 'pushNotifications', checked)}
+                    />
                   </div>
                   
                   <div className="space-y-3">
@@ -414,9 +553,11 @@ const Settings = () => {
                         <Smartphone className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Price Alerts</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.priceAlertsPush}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'priceAlertsPush', checked)}
+                        disabled={!settings.pushNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -424,9 +565,11 @@ const Settings = () => {
                         <Smartphone className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Order Status</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.orderStatusPush}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'orderStatusPush', checked)}
+                        disabled={!settings.pushNotifications}
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -434,9 +577,11 @@ const Settings = () => {
                         <Smartphone className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">Security Alerts</span>
                       </div>
-                      <div className="flex items-center h-5 w-9 rounded-full bg-primary relative cursor-pointer">
-                        <span className="block h-4 w-4 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                      </div>
+                      <Switch 
+                        checked={settings.securityAlertsPush}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'securityAlertsPush', checked)}
+                        disabled={!settings.pushNotifications}
+                      />
                     </div>
                   </div>
                 </div>
@@ -594,9 +739,10 @@ const Settings = () => {
                       <h4 className="font-medium">Data Sharing</h4>
                       <p className="text-sm text-muted-foreground">Control how your data is used</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-muted relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute left-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.dataSharing}
+                      onCheckedChange={(checked) => updateSetting('Privacy', 'dataSharing', checked)}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">Allow sharing of non-personal, anonymized trading data to improve platform features.</p>
                 </div>
@@ -607,9 +753,10 @@ const Settings = () => {
                       <h4 className="font-medium">Analytics Cookies</h4>
                       <p className="text-sm text-muted-foreground">Website usage tracking</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.locationTracking}
+                      onCheckedChange={(checked) => updateSetting('Privacy', 'locationTracking', checked)}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">Allow the use of cookies to analyze site usage and improve user experience.</p>
                 </div>
@@ -657,9 +804,10 @@ const Settings = () => {
                       <h4 className="font-medium">Two-Factor Authentication</h4>
                       <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.twoFactorAuth}
+                      onCheckedChange={(checked) => updateSetting('Security', 'twoFactorAuth', checked)}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">Two-factor authentication is currently enabled using an authenticator app.</p>
                   <Button variant="outline" size="sm">
@@ -674,9 +822,10 @@ const Settings = () => {
                       <h4 className="font-medium">Login Verification</h4>
                       <p className="text-sm text-muted-foreground">Verify new device logins</p>
                     </div>
-                    <div className="flex items-center h-6 w-10 rounded-full bg-primary relative cursor-pointer">
-                      <span className="block h-5 w-5 rounded-full bg-background absolute right-0.5 transform transition-transform"></span>
-                    </div>
+                    <Switch 
+                      checked={settings.loginVerification}
+                      onCheckedChange={(checked) => updateSetting('Security', 'loginVerification', checked)}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">Receive email notifications when logging in from a new device or location.</p>
                 </div>
@@ -688,7 +837,11 @@ const Settings = () => {
                       <p className="text-sm text-muted-foreground">Auto-logout after inactivity</p>
                     </div>
                   </div>
-                  <select className="w-full py-2 rounded-md border border-input bg-background">
+                  <select 
+                    className="w-full py-2 rounded-md border border-input bg-background"
+                    value={settings.sessionTimeout}
+                    onChange={(e) => updateSetting('Security', 'sessionTimeout', e.target.value)}
+                  >
                     <option value="15">15 minutes</option>
                     <option value="30">30 minutes</option>
                     <option value="60">1 hour</option>

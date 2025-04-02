@@ -7,6 +7,9 @@ const __dirname = dirname(__filename);
 
 console.log('Starting TradeHeaven Wallet Server...');
 
+// Set environment variable for the port
+process.env.WALLET_SERVER_PORT = 3002;
+
 // Use absolute path to ensure server starts correctly regardless of current directory
 const serverPath = join(__dirname, 'src', 'server', 'index.js');
 const server = spawn('node', [serverPath]);
@@ -16,7 +19,7 @@ server.stdout.on('data', (data) => {
 });
 
 server.stderr.on('data', (data) => {
-  console.error(`${data}`);
+  console.error(`Server error: ${data}`);
 });
 
 server.on('close', (code) => {

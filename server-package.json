@@ -1,0 +1,15 @@
+{
+  "name": "tradeheaven-wallet-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server/index.js",
+  "scripts": {
+    "start": "node src/server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "body-parser": "^2.2.0",
+    "sqlite3": "^5.1.7"
+  }
+} 
