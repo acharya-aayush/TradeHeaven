@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Background -->
+  <rect width="24" height="24" rx="4" fill="#1d4ed8" />
+  
+  <!-- Trading Chart Line - Uptrending -->
+  <polyline points="3,18 7,12 11,14 15,8 21,6" stroke="white" stroke-width="2" />
+  
+  <!-- Point markers -->
+  <circle cx="3" cy="18" r="1.5" fill="white" />
+  <circle cx="7" cy="12" r="1.5" fill="white" />
+  <circle cx="11" cy="14" r="1.5" fill="white" />
+  <circle cx="15" cy="8" r="1.5" fill="white" />
+  <circle cx="21" cy="6" r="1.5" fill="white" />
+</svg> 

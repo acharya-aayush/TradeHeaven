@@ -34,7 +34,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isActive }) => {
   };
 
   return (
-    <div className={`w-full mt-2 aspect-video rounded-md border overflow-hidden ${isActive ? 'ring-2 ring-primary' : ''}`}>
+    <div className={`w-full mt-2 aspect-video rounded-md border overflow-hidden transition-all duration-200 ${isActive ? 'ring-2 ring-primary shadow-md' : ''}`}>
       <div className={`w-full h-full ${getBgColor()} p-2`}>
         {/* Mock UI elements */}
         <div className={`w-1/2 h-2 rounded-full mb-1 ${getTextColor()} opacity-80`}></div>

@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { OrderData } from '@/lib/data/mockData';
 import { lockCollateral, releaseCollateral } from './walletService';
@@ -13,6 +12,8 @@ export interface OrderResponse {
   message: string;
   error?: string;
   order?: OrderData;
+  holding?: any;
+  wallet?: any;
 }
 
 // Place a new order
@@ -119,6 +120,54 @@ export const cancelOrder = async (orderId: string): Promise<OrderResponse> => {
     return {
       success: false,
       message: 'Failed to cancel order',
+      error: error.message
+    };
+  }
+};
+
+// Execute an order
+export const executeOrder = async (orderId: string, executionPrice?: number): Promise<OrderResponse> => {
+  try {
+    // Ensure server is running before making request
+    const serverRunning = await ensureServerRunning();
+    
+    // For testing in offline/demo mode - provide mock response
+    if (!serverRunning) {
+      console.log(`[MOCK] Executing order ${orderId} with price ${executionPrice}`);
+      
+      // Return a successful mock response
+      return {
+        success: true,
+        message: 'Order executed successfully',
+        order: {
+          id: orderId,
+          status: 'executed',
+          price: executionPrice, 
+          // Other fields will be filled in by the component
+          symbol: '',  // Will be filled from the original order in useOrders
+          type: 'limit',
+          side: 'buy',
+          quantity: 0,
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+    
+    // Production code - make the actual API call
+    const response = await axios.post(`${API_URL}/orders/execute`, { 
+      orderId,
+      executionPrice
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Error executing order:', error);
+    if (error.response) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      message: 'Failed to execute order',
       error: error.message
     };
   }

@@ -3,8 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ordersData } from '@/lib/data/mockData';
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 const RecentOrders = () => {
+  const { toast } = useToast();
+  
   // Helper function to format date
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 
@@ -36,7 +39,7 @@ const RecentOrders = () => {
                   <span className="font-medium">{order.symbol}</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {order.quantity} shares @ {order.price ? `$${order.price.toFixed(2)}` : 'Market'} ({order.type})
+                  {order.quantity} shares @ {order.price ? `Rs. ${order.price.toFixed(2)}` : 'Market'} ({order.type})
                 </div>
               </div>
               <div className="text-right">

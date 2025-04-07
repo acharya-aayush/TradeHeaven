@@ -8,7 +8,7 @@ export const initWatchlistSchema = () => {
       watchlist_id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
       name TEXT NOT NULL,
-      is_default INTEGER DEFAULT 0,
+      is_default BOOLEAN DEFAULT FALSE,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
@@ -36,13 +36,13 @@ export const initWatchlistSchema = () => {
       type TEXT CHECK(type IN ('price', 'percentage', 'volume', 'resistance', 'support')),
       condition TEXT CHECK(condition IN ('above', 'below', 'crosses')),
       threshold REAL NOT NULL,
-      triggered INTEGER DEFAULT 0,
+      triggered BOOLEAN DEFAULT FALSE,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
 
   // Check if default watchlist exists, if not create one
-  const defaultWatchlist = db.prepare('SELECT * FROM watchlists WHERE user_id = ? AND is_default = 1').get('user1');
+  const defaultWatchlist = db.prepare('SELECT * FROM watchlists WHERE user_id = ? AND is_default = TRUE').get('user1');
   if (!defaultWatchlist) {
     const watchlistId = 'default';
     db.prepare('INSERT INTO watchlists (watchlist_id, user_id, name, is_default) VALUES (?, ?, ?, ?)').run(

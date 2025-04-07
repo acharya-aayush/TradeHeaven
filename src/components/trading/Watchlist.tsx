@@ -61,7 +61,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
                   <Bell className="h-3 w-3" />
                 </Button>
                 <div>
-                  <div className="font-mono">${item.price.toFixed(2)}</div>
+                  <div className="font-mono">Rs. {item.price.toFixed(2)}</div>
                   <div className={`flex items-center justify-end text-xs ${
                     item.change >= 0 ? 'text-market-up' : 'text-market-down'
                   }`}>

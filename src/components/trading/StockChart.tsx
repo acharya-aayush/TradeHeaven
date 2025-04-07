@@ -18,8 +18,8 @@ const StockChart: React.FC<StockChartProps> = ({
 }) => {
   const [selectedRange, setSelectedRange] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | 'All'>(timeRange);
   
-  // Get chart data for the selected symbol (default to AAPL if not found)
-  const chartData = stockChartData[symbol as keyof typeof stockChartData] || stockChartData.AAPL;
+  // Get chart data for the selected symbol (default to NABIL if not found)
+  const chartData = stockChartData[symbol as keyof typeof stockChartData] || stockChartData.NABIL;
   
   // Filter data based on selected time range
   const getFilteredData = () => {
@@ -63,7 +63,7 @@ const StockChart: React.FC<StockChartProps> = ({
             {symbol} {name ? `- ${name}` : ''}
           </CardTitle>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xl font-mono">${lastPrice.toFixed(2)}</span>
+            <span className="text-xl font-mono">Rs. {lastPrice.toFixed(2)}</span>
             <span className={`text-sm ${isPositive ? 'text-market-up' : 'text-market-down'}`}>
               {isPositive ? '+' : ''}{change.toFixed(2)} ({isPositive ? '+' : ''}{changePercent.toFixed(2)}%)
             </span>
@@ -103,12 +103,12 @@ const StockChart: React.FC<StockChartProps> = ({
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10 }}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
-                width={50}
+                tickFormatter={(value) => `Rs. ${value.toFixed(0)}`}
+                width={60}
               />
               <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.2} />
               <Tooltip 
-                formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                formatter={(value: number) => [`Rs. ${value.toFixed(2)}`, 'Price']}
                 labelFormatter={(label) => `Date: ${label}`}
                 contentStyle={{ 
                   backgroundColor: 'rgba(15, 23, 42, 0.8)',

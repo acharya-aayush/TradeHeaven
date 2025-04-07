@@ -1,4 +1,3 @@
-
 import { 
   BarChart3, 
   Home, 
@@ -11,9 +10,13 @@ import {
   BookOpen,
   Wallet,
   Heart,
-  Users
+  Users,
+  LogOut,
+  AlertCircle
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/badge';
 
 import {
   Sidebar,
@@ -88,6 +91,13 @@ const secondaryNavItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, user, isDemoMode } = useAuth();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   
   return (
     <Sidebar>
@@ -101,6 +111,19 @@ const AppSidebar = () => {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        {user && (
+          <div className="px-4 py-2 mb-2">
+            <div className="text-sm font-medium">Welcome,</div>
+            <div className="font-semibold">{user.username}</div>
+            {isDemoMode && (
+              <Badge variant="outline" className="mt-1 bg-amber-50 text-amber-600 border-amber-200 text-xs flex items-center gap-1 w-fit">
+                <AlertCircle className="h-3 w-3" />
+                Demo Mode
+              </Badge>
+            )}
+          </div>
+        )}
+        
         <SidebarGroup>
           <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -123,6 +146,7 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -153,7 +177,19 @@ const AppSidebar = () => {
           <Link to="/settings" className="p-2 rounded-md hover:bg-sidebar-accent">
             <Settings className="h-5 w-5" />
           </Link>
+          <button 
+            onClick={handleLogout} 
+            className="p-2 rounded-md hover:bg-sidebar-accent text-red-500"
+            title="Logout"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
         </div>
+        {isDemoMode && (
+          <div className="p-2 border-t text-center">
+            <p className="text-xs text-amber-600">Running in Demo Mode</p>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bell } from 'lucide-react';
+import { Bell, BarChart3, Volume2, Calendar, Percent } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PriceAlert } from '@/services/watchlistService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 interface AlertDialogProps {
   symbol: string;
@@ -37,9 +39,11 @@ const AlertDialog: React.FC<AlertDialogProps> = ({
   stockPrice,
   onCreateAlert
 }) => {
+  const { toast } = useToast();
   const [alertType, setAlertType] = useState<PriceAlert['type']>('price');
   const [condition, setCondition] = useState<PriceAlert['condition']>('above');
   const [threshold, setThreshold] = useState<string>(stockPrice.toFixed(2));
+  const [selectedTab, setSelectedTab] = useState<string>('price');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -55,10 +59,36 @@ const AlertDialog: React.FC<AlertDialogProps> = ({
         parseFloat(threshold)
       );
       setOpen(false);
+      toast({
+        title: "Alert created",
+        description: `A new alert has been set for ${symbol}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to create alert",
+        description: "An error occurred while creating your alert.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleTabChange = (value: string) => {
+    setSelectedTab(value);
+    setAlertType(value as PriceAlert['type']);
+    
+    // Reset threshold based on tab
+    if (value === 'price') {
+      setThreshold(stockPrice.toFixed(2));
+    } else if (value === 'percentage') {
+      setThreshold('5.0');
+    } else if (value === 'volume') {
+      setThreshold('1000');
+    } else {
+      setThreshold('0');
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -72,68 +102,172 @@ const AlertDialog: React.FC<AlertDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Set Price Alert for {symbol}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="space-y-2">
-            <Label htmlFor="alert-type">Alert Type</Label>
-            <Select 
-              value={alertType} 
-              onValueChange={(value) => setAlertType(value as PriceAlert['type'])}
-            >
-              <SelectTrigger id="alert-type">
-                <SelectValue placeholder="Select alert type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="price">Price</SelectItem>
-                <SelectItem value="percentage">Percentage Change</SelectItem>
-                <SelectItem value="volume">Volume</SelectItem>
-                <SelectItem value="support">Support Level</SelectItem>
-                <SelectItem value="resistance">Resistance Level</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        
+        <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="price" className="flex items-center gap-1">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Price</span>
+            </TabsTrigger>
+            <TabsTrigger value="percentage" className="flex items-center gap-1">
+              <Percent className="h-4 w-4" />
+              <span className="hidden sm:inline">Percent</span>
+            </TabsTrigger>
+            <TabsTrigger value="volume" className="flex items-center gap-1">
+              <Volume2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Volume</span>
+            </TabsTrigger>
+            <TabsTrigger value="event" className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Events</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="condition">Condition</Label>
-            <Select 
-              value={condition} 
-              onValueChange={(value) => setCondition(value as PriceAlert['condition'])}
-            >
-              <SelectTrigger id="condition">
-                <SelectValue placeholder="Select condition" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="above">Above</SelectItem>
-                <SelectItem value="below">Below</SelectItem>
-                <SelectItem value="crosses">Crosses</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <TabsContent value="price">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="condition">Condition</Label>
+                <Select 
+                  value={condition} 
+                  onValueChange={(value) => setCondition(value as PriceAlert['condition'])}
+                >
+                  <SelectTrigger id="condition">
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="above">Above</SelectItem>
+                    <SelectItem value="below">Below</SelectItem>
+                    <SelectItem value="crosses">Crosses</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="threshold">
-              {alertType === 'price' && 'Price Threshold ($)'}
-              {alertType === 'percentage' && 'Percentage Change (%)'}
-              {alertType === 'volume' && 'Volume Threshold'}
-              {alertType === 'support' && 'Support Level ($)'}
-              {alertType === 'resistance' && 'Resistance Level ($)'}
-            </Label>
-            <Input
-              id="threshold"
-              type="number"
-              step={alertType === 'percentage' ? '0.1' : '0.01'}
-              min={alertType === 'percentage' ? '-100' : '0'}
-              value={threshold}
-              onChange={(e) => setThreshold(e.target.value)}
-              required
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="threshold">Price Threshold (Rs.)</Label>
+                <Input
+                  id="threshold"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={threshold}
+                  onChange={(e) => setThreshold(e.target.value)}
+                  required
+                />
+              </div>
 
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting || !threshold}>
-              Create Alert
-            </Button>
-          </DialogFooter>
-        </form>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting || !threshold}>
+                  Create Alert
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="percentage">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="percentage-condition">Change Direction</Label>
+                <Select 
+                  value={condition} 
+                  onValueChange={(value) => setCondition(value as PriceAlert['condition'])}
+                >
+                  <SelectTrigger id="percentage-condition">
+                    <SelectValue placeholder="Select direction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="above">Increases by</SelectItem>
+                    <SelectItem value="below">Decreases by</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="percentage-threshold">Percentage Change (%)</Label>
+                <Input
+                  id="percentage-threshold"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={threshold}
+                  onChange={(e) => setThreshold(e.target.value)}
+                  required
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting || !threshold}>
+                  Create Alert
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="volume">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="volume-condition">Volume Condition</Label>
+                <Select 
+                  value={condition} 
+                  onValueChange={(value) => setCondition(value as PriceAlert['condition'])}
+                >
+                  <SelectTrigger id="volume-condition">
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="above">Exceeds</SelectItem>
+                    <SelectItem value="below">Falls below</SelectItem>
+                    <SelectItem value="crosses">Changes by</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="volume-threshold">Volume (shares)</Label>
+                <Input
+                  id="volume-threshold"
+                  type="number"
+                  min="0"
+                  value={threshold}
+                  onChange={(e) => setThreshold(e.target.value)}
+                  required
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting || !threshold}>
+                  Create Alert
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="event">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="event-type">Event Type</Label>
+                <Select 
+                  defaultValue="dividend"
+                  onValueChange={(value) => setAlertType(value as PriceAlert['type'])}
+                >
+                  <SelectTrigger id="event-type">
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dividend">Dividend Announcement</SelectItem>
+                    <SelectItem value="earnings">Earnings Report</SelectItem>
+                    <SelectItem value="agm">Annual General Meeting</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  Create Alert
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

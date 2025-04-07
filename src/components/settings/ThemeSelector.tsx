@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Laptop } from 'lucide-react';
 import { useThemePreview } from '@/hooks/use-theme-preview';
 import ThemePreview from './ThemePreview';
 
@@ -48,8 +48,7 @@ const ThemeSelector = () => {
           data-state={previewTheme === 'system' ? 'active' : 'inactive'}
         >
           <div className="flex gap-1">
-            <Sun className="h-5 w-5" />
-            <Moon className="h-5 w-5" />
+            <Laptop className="h-5 w-5" />
           </div>
           <span className="text-sm font-medium">System</span>
           <ThemePreview theme="system" isActive={previewTheme === 'system'} />

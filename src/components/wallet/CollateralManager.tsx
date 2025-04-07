@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { DollarSign, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { WalletData } from '@/services/walletService';
 import { formatCurrency } from './WalletUtils';
@@ -67,7 +66,7 @@ export const CollateralManager: React.FC<CollateralManagerProps> = ({
         <div className="grid gap-2">
           <Label htmlFor="lockAmount">Lock Amount</Label>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">Rs.</div>
             <Input 
               id="lockAmount" 
               className="pl-9" 
@@ -87,7 +86,7 @@ export const CollateralManager: React.FC<CollateralManagerProps> = ({
         <div className="grid gap-2">
           <Label htmlFor="releaseAmount">Release Amount</Label>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">Rs.</div>
             <Input 
               id="releaseAmount" 
               className="pl-9" 

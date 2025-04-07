@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Table, 
@@ -35,6 +34,7 @@ interface SortableItemProps {
   onSelectStock: (stock: StockData) => void;
   onAddAlert: (e: React.MouseEvent, symbol: string) => void;
   onRemoveStock: (e: React.MouseEvent, symbol: string) => void;
+  formatPrice: (price: number) => string;
 }
 
 const SortableItem: React.FC<SortableItemProps> = ({ 
@@ -42,7 +42,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
   stock, 
   onSelectStock, 
   onAddAlert, 
-  onRemoveStock 
+  onRemoveStock,
+  formatPrice
 }) => {
   const {
     attributes,
@@ -80,7 +81,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
       </TableCell>
       <TableCell className="font-medium">{stock.symbol}</TableCell>
       <TableCell className="max-w-40 truncate">{stock.name}</TableCell>
-      <TableCell className="font-mono">${stock.price.toFixed(2)}</TableCell>
+      <TableCell className="font-mono">{formatPrice(stock.price)}</TableCell>
       <TableCell>
         <div className={`flex items-center ${
           isPositive ? 'text-market-up' : 'text-market-down'
@@ -129,6 +130,7 @@ interface DraggableWatchlistTableProps {
   onReorderStocks: (symbols: string[]) => void;
   onAddAlert: (symbol: string) => void;
   onRemoveStock: (symbol: string) => void;
+  formatCurrency?: (price: number) => string;
 }
 
 const DraggableWatchlistTable: React.FC<DraggableWatchlistTableProps> = ({
@@ -136,7 +138,8 @@ const DraggableWatchlistTable: React.FC<DraggableWatchlistTableProps> = ({
   onSelectStock,
   onReorderStocks,
   onAddAlert,
-  onRemoveStock
+  onRemoveStock,
+  formatCurrency = (price) => `$${price.toFixed(2)}`
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -209,6 +212,7 @@ const DraggableWatchlistTable: React.FC<DraggableWatchlistTableProps> = ({
                     onSelectStock={onSelectStock}
                     onAddAlert={handleAddAlert}
                     onRemoveStock={handleRemoveStock}
+                    formatPrice={formatCurrency}
                   />
                 ))
               )}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,7 +74,7 @@ const Markets = () => {
                   >
                     <TableCell className="font-medium">{stock.symbol}</TableCell>
                     <TableCell className="truncate max-w-32">{stock.name}</TableCell>
-                    <TableCell className="font-mono">${stock.price.toFixed(2)}</TableCell>
+                    <TableCell className="font-mono">Rs. {stock.price.toFixed(2)}</TableCell>
                     <TableCell>
                       <div className={`flex items-center ${
                         stock.change >= 0 ? 'text-market-up' : 'text-market-down'
@@ -91,7 +90,7 @@ const Markets = () => {
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{(stock.volume / 1000000).toFixed(1)}M</TableCell>
-                    <TableCell className="hidden md:table-cell">${(stock.marketCap / 1000000000).toFixed(1)}B</TableCell>
+                    <TableCell className="hidden md:table-cell">Rs. {(stock.marketCap / 1000000000).toFixed(1)}B</TableCell>
                     <TableCell className="hidden lg:table-cell">{stock.sector}</TableCell>
                   </TableRow>
                 ))}

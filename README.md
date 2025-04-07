@@ -1,25 +1,31 @@
+# TradeHeaven - MarketFlow Dynamics
 
-# TradeHeaven Trading Platform
-
-This is a demo-level trading platform with a fully functional wallet system.
+A multi-user trading platform with real-time updates and auto-cleanup functionality.
 
 ## Features
 
-- **Wallet Management**: Deposit and withdraw funds
-- **Collateral System**: Lock and release funds for trading
-- **Transaction History**: View all your financial activities
-- **Real-time Feedback**: Get notifications for all actions
+- User authentication system with JWT
+- Real-time trading capabilities
+- Portfolio management
+- Watchlists for tracking stocks
+- Wallet system for managing funds
+- Auto-cleanup for server processes
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js
-- npm or yarn
+- Node.js (v16 or higher)
+- npm package manager
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/marketflow-dynamics.git
+   cd marketflow-dynamics
+   ```
+
 2. Install dependencies:
    ```
    npm install
@@ -27,46 +33,67 @@ This is a demo-level trading platform with a fully functional wallet system.
 
 ### Running the Application
 
-You need to start both the wallet server and frontend:
+1. Start the backend server:
+   ```
+   node start-wallet-server.js
+   ```
 
-#### Start the Wallet Server (Method 1 - Recommended)
-```
-node start-wallet-server.js
-```
+2. In a separate terminal, start the frontend development server:
+   ```
+   npm run dev
+   ```
 
-#### Start the Wallet Server (Method 2 - Alternative)
-```
-node src/server/index.js
-```
+3. Open your browser and navigate to:
+   ```
+   http://localhost:8081
+   ```
 
-#### Start the Frontend (in a separate terminal)
-```
-npm run dev
-```
+## Auto-Cleanup Functionality
 
-## Using the Wallet System
+The application has built-in auto-cleanup functionality that will automatically shut down the server when:
 
-The wallet system is a demonstration with a SQLite database. It allows you to:
+1. No clients are connected for 30 minutes
+2. The system receives a shutdown signal (Ctrl+C)
+3. The application crashes unexpectedly
 
-1. **Deposit Funds**: Add money to your trading account
-2. **Withdraw Funds**: Remove available funds from your account
-3. **Manage Collateral**: Lock funds for trading and release them when done
-4. **View Transactions**: See a history of all your financial activities
+### How It Works
+
+- A socket.io server tracks client connections
+- When clients disconnect, a shutdown timer starts
+- If no new connections are made within the timeout period, the server shuts down
+- This ensures resources are freed when the application is not in use
+
+### Testing with Multiple Users
+
+To test multi-user functionality locally:
+
+1. Open the application in different browsers (e.g., Chrome, Firefox, Edge)
+2. Or use private/incognito windows in the same browser
+3. Register different user accounts in each window
+4. Perform transactions between accounts to test the trading functionality
 
 ## Troubleshooting
 
-If you see "Failed to load wallet data" errors:
-1. Make sure the wallet server is running in a separate terminal
-2. Check that the server is accessible on port 3001
-3. Look for any error messages in the server terminal
+If the server won't start due to "address already in use" errors:
 
-## Implementation Details
+1. Find the process using port 3001:
+   ```
+   # On Windows
+   netstat -ano | findstr :3001
+   
+   # On macOS/Linux
+   lsof -i :3001
+   ```
 
-- **Frontend**: React with Tailwind CSS and ShadcnUI
-- **Backend**: Express.js with SQLite
-- **State Management**: React Hooks and Context
-- **Data Visualization**: Recharts
+2. Kill the process:
+   ```
+   # On Windows (replace PID with actual process ID)
+   taskkill /F /PID PID
+   
+   # On macOS/Linux
+   kill -9 PID
+   ```
 
-## Notes
+## License
 
-This is a demonstration application. In a production environment, you would integrate with real payment processors and financial institutions.
+This project is licensed under the MIT License - see the LICENSE file for details.

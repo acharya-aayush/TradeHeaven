@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ export const WithdrawForm: React.FC<WithdrawFormProps> = ({ wallet, onWithdraw }
           <div className="space-y-2">
             <Label htmlFor="withdrawAmount">Amount to Withdraw</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">Rs.</div>
               <Input 
                 id="withdrawAmount" 
                 className="pl-9" 
@@ -54,15 +53,15 @@ export const WithdrawForm: React.FC<WithdrawFormProps> = ({ wallet, onWithdraw }
           <div className="bg-muted p-4 rounded-md">
             <div className="flex justify-between text-sm mb-2">
               <span>Withdrawal Amount</span>
-              <span>{withdrawAmount ? formatCurrency(parseFloat(withdrawAmount) || 0) : '$0.00'}</span>
+              <span>{withdrawAmount ? formatCurrency(parseFloat(withdrawAmount) || 0) : 'Rs. 0.00'}</span>
             </div>
             <div className="flex justify-between text-sm mb-2">
               <span>Fee</span>
-              <span>$0.00</span>
+              <span>Rs. 0.00</span>
             </div>
             <div className="flex justify-between font-medium pt-2 border-t">
               <span>Total</span>
-              <span>{withdrawAmount ? formatCurrency(parseFloat(withdrawAmount) || 0) : '$0.00'}</span>
+              <span>{withdrawAmount ? formatCurrency(parseFloat(withdrawAmount) || 0) : 'Rs. 0.00'}</span>
             </div>
           </div>
         </div>

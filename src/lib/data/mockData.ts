@@ -17,7 +17,7 @@ export interface OrderData {
   side: 'buy' | 'sell';
   quantity: number;
   price?: number;
-  status: 'open' | 'filled' | 'canceled' | 'rejected';
+  status: 'open' | 'filled' | 'canceled' | 'rejected' | 'executed' | 'pending';
   timestamp: string;
 }
 
@@ -41,138 +41,138 @@ export interface WatchlistItem {
 
 export const stocksData: StockData[] = [
   {
-    symbol: 'AAPL',
-    name: 'Apple Inc.',
-    price: 165.32,
-    previousClose: 163.45,
-    change: 1.87,
-    changePercent: 1.14,
-    volume: 76542000,
-    marketCap: 2870000000000,
-    sector: 'Technology'
+    symbol: 'NABIL',
+    name: 'Nabil Bank Limited',
+    price: 985.65,
+    previousClose: 980.25,
+    change: 5.40,
+    changePercent: 0.55,
+    volume: 125430,
+    marketCap: 156500000000,
+    sector: 'Financial'
   },
   {
-    symbol: 'MSFT',
-    name: 'Microsoft Corporation',
-    price: 342.88,
-    previousClose: 338.11,
-    change: 4.77,
-    changePercent: 1.41,
-    volume: 25432000,
-    marketCap: 2540000000000,
-    sector: 'Technology'
+    symbol: 'NHEC',
+    name: 'Nepal HydroEnergy Company',
+    price: 845.20,
+    previousClose: 830.50,
+    change: 14.70,
+    changePercent: 1.77,
+    volume: 98450,
+    marketCap: 134000000000,
+    sector: 'Energy'
   },
   {
-    symbol: 'GOOGL',
-    name: 'Alphabet Inc.',
-    price: 138.45,
-    previousClose: 139.66,
-    change: -1.21,
-    changePercent: -0.87,
-    volume: 18765000,
-    marketCap: 1750000000000,
-    sector: 'Technology'
+    symbol: 'HTSL',
+    name: 'HimTech Solutions Limited',
+    price: 1120.75,
+    previousClose: 1143.25,
+    change: -22.50,
+    changePercent: -1.97,
+    volume: 56780,
+    marketCap: 87500000000,
+    sector: 'Tech'
   },
   {
-    symbol: 'AMZN',
-    name: 'Amazon.com Inc.',
-    price: 178.25,
-    previousClose: 175.35,
-    change: 2.9,
-    changePercent: 1.65,
-    volume: 32654000,
-    marketCap: 1830000000000,
-    sector: 'Consumer Cyclical'
+    symbol: 'SCPL',
+    name: 'SwasthaCare Pharmaceuticals Ltd.',
+    price: 645.30,
+    previousClose: 635.15,
+    change: 10.15,
+    changePercent: 1.60,
+    volume: 78900,
+    marketCap: 42000000000,
+    sector: 'Healthcare'
   },
   {
-    symbol: 'TSLA',
-    name: 'Tesla Inc.',
-    price: 248.39,
-    previousClose: 251.05,
-    change: -2.66,
-    changePercent: -1.06,
-    volume: 85642000,
-    marketCap: 785000000000,
-    sector: 'Automotive'
+    symbol: 'TPL',
+    name: 'Trishakti Power Ltd.',
+    price: 512.45,
+    previousClose: 518.70,
+    change: -6.25,
+    changePercent: -1.20,
+    volume: 103450,
+    marketCap: 38600000000,
+    sector: 'Energy'
   },
   {
-    symbol: 'META',
-    name: 'Meta Platforms Inc.',
-    price: 465.78,
-    previousClose: 458.32,
-    change: 7.46,
-    changePercent: 1.63,
-    volume: 15432000,
-    marketCap: 1180000000000,
-    sector: 'Technology'
+    symbol: 'DHL',
+    name: 'Digital Himalaya Ltd.',
+    price: 950.25,
+    previousClose: 935.40,
+    change: 14.85,
+    changePercent: 1.59,
+    volume: 45680,
+    marketCap: 67800000000,
+    sector: 'Tech'
   },
   {
-    symbol: 'NVDA',
-    name: 'NVIDIA Corporation',
-    price: 852.95,
-    previousClose: 840.25,
-    change: 12.7,
-    changePercent: 1.51,
-    volume: 43215000,
-    marketCap: 2100000000000,
-    sector: 'Technology'
+    symbol: 'NMRL',
+    name: 'Namaste Motors and Retail Ltd.',
+    price: 525.85,
+    previousClose: 520.30,
+    change: 5.55,
+    changePercent: 1.07,
+    volume: 86750,
+    marketCap: 29500000000,
+    sector: 'Consumer'
   },
   {
-    symbol: 'JPM',
-    name: 'JPMorgan Chase & Co.',
-    price: 183.25,
-    previousClose: 184.47,
-    change: -1.22,
-    changePercent: -0.66,
-    volume: 12654000,
-    marketCap: 528000000000,
-    sector: 'Financial Services'
+    symbol: 'EFCL',
+    name: 'Everest Finance Company Ltd.',
+    price: 678.50,
+    previousClose: 682.25,
+    change: -3.75,
+    changePercent: -0.55,
+    volume: 39560,
+    marketCap: 32700000000,
+    sector: 'Financial'
   }
 ];
 
 export const portfolioData: PortfolioPosition[] = [
   {
-    symbol: 'AAPL',
+    symbol: 'NABIL',
     quantity: 50,
-    averagePrice: 150.25,
-    currentPrice: 165.32,
-    value: 8266,
-    gainLoss: 753.50,
-    gainLossPercent: 10.03
+    averagePrice: 950.75,
+    currentPrice: 985.65,
+    value: 49282.5,
+    gainLoss: 1745,
+    gainLossPercent: 3.67
   },
   {
-    symbol: 'MSFT',
+    symbol: 'NHEC',
     quantity: 25,
-    averagePrice: 320.45,
-    currentPrice: 342.88,
-    value: 8572,
-    gainLoss: 560.75,
-    gainLossPercent: 7.00
+    averagePrice: 830.40,
+    currentPrice: 845.20,
+    value: 21130.0,
+    gainLoss: 370,
+    gainLossPercent: 1.78
   },
   {
-    symbol: 'NVDA',
-    quantity: 15,
-    averagePrice: 780.50,
-    currentPrice: 852.95,
-    value: 12794.25,
-    gainLoss: 1086.75,
-    gainLossPercent: 9.28
+    symbol: 'HTSL',
+    quantity: 20,
+    averagePrice: 1080.60,
+    currentPrice: 1120.75,
+    value: 22415.0,
+    gainLoss: 803.0,
+    gainLossPercent: 3.72
   },
   {
-    symbol: 'GOOGL',
+    symbol: 'TPL',
     quantity: 30,
-    averagePrice: 140.25,
-    currentPrice: 138.45,
-    value: 4153.5,
-    gainLoss: -54,
-    gainLossPercent: -1.28
+    averagePrice: 520.40,
+    currentPrice: 512.45,
+    value: 15373.5,
+    gainLoss: -238.5,
+    gainLossPercent: -1.53
   }
 ];
 
 export const ordersData: OrderData[] = [
   {
     id: 'ord-001',
-    symbol: 'AAPL',
+    symbol: 'NABIL',
     type: 'market',
     side: 'buy',
     quantity: 10,
@@ -181,31 +181,31 @@ export const ordersData: OrderData[] = [
   },
   {
     id: 'ord-002',
-    symbol: 'MSFT',
+    symbol: 'HTSL',
     type: 'limit',
     side: 'buy',
     quantity: 5,
-    price: 330.50,
+    price: 1100.50,
     status: 'filled',
     timestamp: '2023-09-14T14:12:30Z'
   },
   {
     id: 'ord-003',
-    symbol: 'TSLA',
+    symbol: 'TPL',
     type: 'limit',
     side: 'sell',
     quantity: 3,
-    price: 250.00,
+    price: 520.00,
     status: 'open',
     timestamp: '2023-09-16T09:45:22Z'
   },
   {
     id: 'ord-004',
-    symbol: 'GOOGL',
+    symbol: 'SCPL',
     type: 'stop',
     side: 'sell',
     quantity: 8,
-    price: 135.75,
+    price: 640.75,
     status: 'open',
     timestamp: '2023-09-16T11:30:15Z'
   }
@@ -213,39 +213,112 @@ export const ordersData: OrderData[] = [
 
 export const watchlistData: WatchlistItem[] = [
   {
-    symbol: 'AAPL',
-    name: 'Apple Inc.',
-    price: 165.32,
-    change: 1.87,
-    changePercent: 1.14
+    symbol: 'NABIL',
+    name: 'Nabil Bank Limited',
+    price: 985.65,
+    change: 5.40,
+    changePercent: 0.55
   },
   {
-    symbol: 'MSFT',
-    name: 'Microsoft Corporation',
-    price: 342.88,
-    change: 4.77,
-    changePercent: 1.41
+    symbol: 'HTSL',
+    name: 'HimTech Solutions Limited',
+    price: 1120.75,
+    change: -22.50,
+    changePercent: -1.97
   },
   {
-    symbol: 'NVDA',
-    name: 'NVIDIA Corporation',
-    price: 852.95,
-    change: 12.7,
-    changePercent: 1.51
+    symbol: 'DHL',
+    name: 'Digital Himalaya Ltd.',
+    price: 950.25,
+    change: 14.85,
+    changePercent: 1.59
   },
   {
-    symbol: 'TSLA',
-    name: 'Tesla Inc.',
-    price: 248.39,
-    change: -2.66,
-    changePercent: -1.06
+    symbol: 'TPL',
+    name: 'Trishakti Power Ltd.',
+    price: 512.45,
+    change: -6.25,
+    changePercent: -1.20
   },
   {
-    symbol: 'META',
-    name: 'Meta Platforms Inc.',
-    price: 465.78,
-    change: 7.46,
-    changePercent: 1.63
+    symbol: 'NMRL',
+    name: 'Namaste Motors and Retail Ltd.',
+    price: 525.85,
+    change: 5.55,
+    changePercent: 1.07
+  }
+];
+
+// Mock orders for testing with varied statuses
+export const MOCK_ORDERS: OrderData[] = [
+  {
+    id: 'ord-001',
+    symbol: 'NABIL',
+    type: 'limit',
+    side: 'buy',
+    quantity: 20,
+    price: 985.65,
+    status: 'open',
+    timestamp: new Date(Date.now() - 1800000).toISOString() // 30 minutes ago
+  },
+  {
+    id: 'ord-002',
+    symbol: 'HTSL',
+    type: 'limit',
+    side: 'buy',
+    quantity: 5,
+    price: 1100.50,
+    status: 'filled',
+    timestamp: new Date(Date.now() - 7200000).toISOString() // 2 hours ago
+  },
+  {
+    id: 'ord-003',
+    symbol: 'TPL',
+    type: 'limit',
+    side: 'sell',
+    quantity: 3,
+    price: 520.00,
+    status: 'canceled',
+    timestamp: new Date(Date.now() - 10800000).toISOString() // 3 hours ago
+  },
+  {
+    id: 'ord-004',
+    symbol: 'NABIL',
+    type: 'limit',
+    side: 'buy',
+    quantity: 15,
+    price: 980.75,
+    status: 'executed',
+    timestamp: new Date(Date.now() - 14400000).toISOString() // 4 hours ago
+  },
+  {
+    id: 'ord-005',
+    symbol: 'DHL',
+    type: 'market',
+    side: 'sell',
+    quantity: 10,
+    status: 'pending',
+    timestamp: new Date(Date.now() - 900000).toISOString() // 15 minutes ago
+  },
+  {
+    id: 'ord-006',
+    symbol: 'SCPL',
+    type: 'limit',
+    side: 'buy',
+    quantity: 8,
+    price: 645.30,
+    status: 'rejected',
+    timestamp: new Date(Date.now() - 21600000).toISOString() // 6 hours ago
+  },
+  {
+    id: 'ord-007',
+    symbol: 'NABIL',
+    type: 'limit',
+    side: 'buy',
+    quantity: 10,
+    price: 983.50,
+    status: 'open',
+    timestamp: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
   }
 ];
 
@@ -276,26 +349,26 @@ export const generateHistoricalData = (days = 30, volatility = 0.02, startPrice 
 };
 
 export const stockChartData = {
-  AAPL: generateHistoricalData(90, 0.015, 160),
-  MSFT: generateHistoricalData(90, 0.012, 330),
-  GOOGL: generateHistoricalData(90, 0.018, 140),
-  TSLA: generateHistoricalData(90, 0.025, 250),
-  NVDA: generateHistoricalData(90, 0.03, 800),
+  NABIL: generateHistoricalData(90, 0.015, 970),
+  HTSL: generateHistoricalData(90, 0.012, 1100),
+  SCPL: generateHistoricalData(90, 0.018, 640),
+  TPL: generateHistoricalData(90, 0.025, 510),
+  DHL: generateHistoricalData(90, 0.03, 920),
 };
 
 // Market summary data
 export const marketSummaryData = {
   indices: [
-    { name: 'S&P 500', value: 4532.12, change: 0.62 },
-    { name: 'Nasdaq', value: 14215.45, change: 0.87 },
-    { name: 'Dow Jones', value: 35426.33, change: 0.35 },
-    { name: 'Russell 2000', value: 1976.22, change: -0.12 }
+    { name: 'NEPSE Index', value: 2432.56, change: 0.62 },
+    { name: 'Float Index', value: 1215.45, change: 0.87 },
+    { name: 'Sensitive Index', value: 426.33, change: 0.35 },
+    { name: 'Banking Index', value: 1576.22, change: -0.12 }
   ],
   sectors: [
-    { name: 'Technology', change: 1.21 },
+    { name: 'Tech', change: 1.21 },
     { name: 'Healthcare', change: 0.54 },
     { name: 'Financial', change: -0.32 },
-    { name: 'Consumer Cyclical', change: 0.87 },
+    { name: 'Consumer', change: 0.87 },
     { name: 'Energy', change: -0.64 }
   ]
 };

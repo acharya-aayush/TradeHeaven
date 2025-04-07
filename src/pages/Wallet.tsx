@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { RefreshCw } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { 
   getWalletBalance, 
   loadFunds, 
@@ -24,12 +24,19 @@ import {
 } from '@/components/wallet';
 import { generateBalanceHistory } from '@/components/wallet/WalletUtils';
 
+interface LocationState {
+  activeTab?: string;
+}
+
 const Wallet = () => {
   const { toast } = useToast();
+  const location = useLocation();
+  const locationState = location.state as LocationState;
+  
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<string>('transactions');
+  const [activeTab, setActiveTab] = useState<string>(locationState?.activeTab || 'transactions');
   const [orderId, setOrderId] = useState<string>('ORD-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'));
   const [balanceHistory, setBalanceHistory] = useState<any[]>([]);
 
@@ -194,6 +201,13 @@ const Wallet = () => {
     });
   };
 
+  // Use effect to set active tab from location state
+  useEffect(() => {
+    if (locationState?.activeTab) {
+      setActiveTab(locationState.activeTab);
+    }
+  }, [location]);
+
   // Load wallet data on mount
   useEffect(() => {
     fetchWalletData();
@@ -242,7 +256,7 @@ const Wallet = () => {
           </TabsContent>
           
           <TabsContent value="deposit" className="space-y-6">
-            <DepositForm onDeposit={handleDeposit} />
+            <DepositForm onDeposit={handleDeposit} wallet={wallet} />
           </TabsContent>
           
           <TabsContent value="withdraw" className="space-y-6">

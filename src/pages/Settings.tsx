@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -10,117 +11,92 @@ import { Settings as SettingsIcon, Moon, Sun, Globe, Bell, Key, Lock, RefreshCw,
 import ThemeSelector from '@/components/settings/ThemeSelector';
 import { Switch } from '@/components/ui/switch';
 
-// Define the settings type
+// Define settings state types
 interface SettingsState {
   // Appearance
-  theme: 'light' | 'dark' | 'system';
-  layout: 'default' | 'reversed';
-  density: 'compact' | 'default' | 'comfortable';
-  fontSize: 'small' | 'medium' | 'large' | 'xlarge';
-  
-  // Preferences
-  language: string;
-  timezone: string;
-  currency: string;
-  dateFormat: string;
+  activeLayoutOption: 'default' | 'reversed';
+  activeDensityOption: 'compact' | 'default' | 'comfortable';
+  activeFontSizeOption: 'small' | 'medium' | 'large' | 'xlarge';
   
   // Notifications
   inAppNotifications: boolean;
   orderExecutionNotifs: boolean;
-  priceAlerts: boolean;
-  newsUpdates: boolean;
-  marketOpenClose: boolean;
-  accountActivity: boolean;
+  priceAlertsNotifs: boolean;
+  accountUpdatesNotifs: boolean;
+  marketNewsNotifs: boolean;
   emailNotifications: boolean;
-  pushNotifications: boolean;
-  
-  // Email Notifications
   securityAlertsEmail: boolean;
   orderConfirmationsEmail: boolean;
   accountStatementsEmail: boolean;
   marketingEmailNotifs: boolean;
-  
-  // Push Notifications
+  pushNotifications: boolean;
   priceAlertsPush: boolean;
   orderStatusPush: boolean;
   securityAlertsPush: boolean;
   
-  // API
-  apiKey: string;
-  apiSecret: string;
-  apiEnabled: boolean;
-  
-  // Privacy & Security
-  twoFactorAuth: boolean;
-  sessionTimeout: number;
+  // Privacy
   dataSharing: boolean;
-  locationTracking: boolean;
+  analyticsCookies: boolean;
+  
+  // Security
+  twoFactorAuth: boolean;
   loginVerification: boolean;
+  sessionTimeout: string;
 }
 
 const Settings = () => {
   const { toast } = useToast();
-  const [activeLayoutOption, setActiveLayoutOption] = useState<'default' | 'reversed'>('default');
-  const [activeDensityOption, setActiveDensityOption] = useState<'compact' | 'default' | 'comfortable'>('default');
-  const [activeFontSizeOption, setActiveFontSizeOption] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   
-  // Initialize settings state
+  // Initialize settings state with default values
   const [settings, setSettings] = useState<SettingsState>({
     // Appearance
-    theme: 'system',
-    layout: 'default',
-    density: 'default',
-    fontSize: 'medium',
-    
-    // Preferences
-    language: 'en',
-    timezone: 'UTC',
-    currency: 'USD',
-    dateFormat: 'MM/DD/YYYY',
+    activeLayoutOption: 'default',
+    activeDensityOption: 'default',
+    activeFontSizeOption: 'medium',
     
     // Notifications
     inAppNotifications: true,
     orderExecutionNotifs: true,
-    priceAlerts: true,
-    newsUpdates: false,
-    marketOpenClose: true,
-    accountActivity: true,
-    emailNotifications: false,
-    pushNotifications: false,
-    
-    // Email Notifications
+    priceAlertsNotifs: true,
+    accountUpdatesNotifs: true,
+    marketNewsNotifs: false,
+    emailNotifications: true,
     securityAlertsEmail: true,
     orderConfirmationsEmail: true,
     accountStatementsEmail: true,
     marketingEmailNotifs: false,
-    
-    // Push Notifications
+    pushNotifications: true,
     priceAlertsPush: true,
     orderStatusPush: true,
     securityAlertsPush: true,
     
-    // API
-    apiKey: '',
-    apiSecret: '',
-    apiEnabled: false,
-    
-    // Privacy & Security
-    twoFactorAuth: false,
-    sessionTimeout: 30,
+    // Privacy
     dataSharing: false,
-    locationTracking: false,
-    loginVerification: false,
+    analyticsCookies: true,
+    
+    // Security
+    twoFactorAuth: true,
+    loginVerification: true,
+    sessionTimeout: '30'
   });
   
-  // Function to update settings
+  // Function to update a specific setting
   const updateSetting = (category: string, key: keyof SettingsState, value: any) => {
     setSettings(prev => ({
       ...prev,
       [key]: value
     }));
+    
+    // Show toast notification
+    toast({
+      title: `${category} setting updated`,
+      description: `Your ${key} preference has been changed.`,
+      duration: 2000
+    });
   };
 
   const handleSaveSettings = () => {
+    // Here you would typically save all settings to a backend or localStorage
     toast({
       title: "Settings saved",
       description: "Your preferences have been updated successfully."
@@ -156,9 +132,9 @@ const Settings = () => {
                   <Label>Dashboard Layout</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeLayoutOption === 'default' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveLayoutOption('default')}
-                      data-state={activeLayoutOption === 'default' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeLayoutOption === 'default' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeLayoutOption', 'default')}
+                      data-state={settings.activeLayoutOption === 'default' ? 'active' : 'inactive'}
                     >
                       <div className="w-full h-24 bg-muted rounded-md flex flex-col">
                         <div className="h-1/3 border-b border-border"></div>
@@ -171,9 +147,9 @@ const Settings = () => {
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeLayoutOption === 'reversed' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveLayoutOption('reversed')}
-                      data-state={activeLayoutOption === 'reversed' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeLayoutOption === 'reversed' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeLayoutOption', 'reversed')}
+                      data-state={settings.activeLayoutOption === 'reversed' ? 'active' : 'inactive'}
                     >
                       <div className="w-full h-24 bg-muted rounded-md flex flex-col">
                         <div className="h-1/3 border-b border-border"></div>
@@ -191,9 +167,9 @@ const Settings = () => {
                   <Label>Density</Label>
                   <div className="grid grid-cols-3 gap-4">
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'compact' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveDensityOption('compact')}
-                      data-state={activeDensityOption === 'compact' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeDensityOption === 'compact' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeDensityOption', 'compact')}
+                      data-state={settings.activeDensityOption === 'compact' ? 'active' : 'inactive'}
                     >
                       <div className="w-full space-y-1">
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -204,9 +180,9 @@ const Settings = () => {
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'default' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveDensityOption('default')}
-                      data-state={activeDensityOption === 'default' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeDensityOption === 'default' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeDensityOption', 'default')}
+                      data-state={settings.activeDensityOption === 'default' ? 'active' : 'inactive'}
                     >
                       <div className="w-full space-y-2">
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -217,9 +193,9 @@ const Settings = () => {
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeDensityOption === 'comfortable' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveDensityOption('comfortable')}
-                      data-state={activeDensityOption === 'comfortable' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeDensityOption === 'comfortable' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeDensityOption', 'comfortable')}
+                      data-state={settings.activeDensityOption === 'comfortable' ? 'active' : 'inactive'}
                     >
                       <div className="w-full space-y-3">
                         <div className="h-2 bg-muted rounded-full"></div>
@@ -246,33 +222,33 @@ const Settings = () => {
                   <Label>Font Size</Label>
                   <div className="grid grid-cols-4 gap-4">
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'small' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveFontSizeOption('small')}
-                      data-state={activeFontSizeOption === 'small' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeFontSizeOption === 'small' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeFontSizeOption', 'small')}
+                      data-state={settings.activeFontSizeOption === 'small' ? 'active' : 'inactive'}
                     >
                       <span className="text-xs">Small</span>
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'medium' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveFontSizeOption('medium')}
-                      data-state={activeFontSizeOption === 'medium' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeFontSizeOption === 'medium' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeFontSizeOption', 'medium')}
+                      data-state={settings.activeFontSizeOption === 'medium' ? 'active' : 'inactive'}
                     >
                       <span className="text-sm">Medium</span>
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'large' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveFontSizeOption('large')}
-                      data-state={activeFontSizeOption === 'large' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeFontSizeOption === 'large' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeFontSizeOption', 'large')}
+                      data-state={settings.activeFontSizeOption === 'large' ? 'active' : 'inactive'}
                     >
                       <span className="text-base">Large</span>
                     </div>
                     
                     <div 
-                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${activeFontSizeOption === 'xlarge' ? 'border-primary bg-muted' : ''}`}
-                      onClick={() => setActiveFontSizeOption('xlarge')}
-                      data-state={activeFontSizeOption === 'xlarge' ? 'active' : 'inactive'}
+                      className={`border rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer hover:border-primary ${settings.activeFontSizeOption === 'xlarge' ? 'border-primary bg-muted' : ''}`}
+                      onClick={() => updateSetting('Appearance', 'activeFontSizeOption', 'xlarge')}
+                      data-state={settings.activeFontSizeOption === 'xlarge' ? 'active' : 'inactive'}
                     >
                       <span className="text-lg">Extra Large</span>
                     </div>
@@ -440,8 +416,8 @@ const Settings = () => {
                         <span className="text-sm">Price Alerts</span>
                       </div>
                       <Switch 
-                        checked={settings.priceAlerts}
-                        onCheckedChange={(checked) => updateSetting('Notifications', 'priceAlerts', checked)}
+                        checked={settings.priceAlertsNotifs}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'priceAlertsNotifs', checked)}
                         disabled={!settings.inAppNotifications}
                       />
                     </div>
@@ -452,8 +428,8 @@ const Settings = () => {
                         <span className="text-sm">Account Updates</span>
                       </div>
                       <Switch 
-                        checked={settings.accountActivity}
-                        onCheckedChange={(checked) => updateSetting('Notifications', 'accountActivity', checked)}
+                        checked={settings.accountUpdatesNotifs}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'accountUpdatesNotifs', checked)}
                         disabled={!settings.inAppNotifications}
                       />
                     </div>
@@ -464,8 +440,8 @@ const Settings = () => {
                         <span className="text-sm">Market News</span>
                       </div>
                       <Switch 
-                        checked={settings.newsUpdates}
-                        onCheckedChange={(checked) => updateSetting('Notifications', 'newsUpdates', checked)}
+                        checked={settings.marketNewsNotifs}
+                        onCheckedChange={(checked) => updateSetting('Notifications', 'marketNewsNotifs', checked)}
                         disabled={!settings.inAppNotifications}
                       />
                     </div>
@@ -754,8 +730,8 @@ const Settings = () => {
                       <p className="text-sm text-muted-foreground">Website usage tracking</p>
                     </div>
                     <Switch 
-                      checked={settings.locationTracking}
-                      onCheckedChange={(checked) => updateSetting('Privacy', 'locationTracking', checked)}
+                      checked={settings.analyticsCookies}
+                      onCheckedChange={(checked) => updateSetting('Privacy', 'analyticsCookies', checked)}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">Allow the use of cookies to analyze site usage and improve user experience.</p>

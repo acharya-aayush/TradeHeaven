@@ -1,21 +1,128 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Key, CreditCard, UserCircle, Lock, Bell, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
+import { Shield, Key, CreditCard, UserCircle, Lock, Bell, ArrowRight, CheckCircle, AlertCircle, Info as InfoIcon } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { updateUserProfile, User } from '@/services/authService';
 
 const Account = () => {
   const { toast } = useToast();
+  const { user, token, login } = useAuth();
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Form fields
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    country: ''
+  });
+  
+  // Password fields
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
-  const handleSaveChanges = () => {
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phoneNumber: user.phone_number || '',
+        dateOfBirth: user.date_of_birth || '',
+        country: user.country || ''
+      });
+    }
+  }, [user]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!token) {
+        setError('Authentication token not found. Please log in again.');
+        return;
+      }
+      
+      const userData = {
+        full_name: formData.fullName,
+        email: formData.email,
+        phone_number: formData.phoneNumber,
+        date_of_birth: formData.dateOfBirth,
+        country: formData.country
+      };
+      
+      const result = await updateUserProfile(token, userData);
+      
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      
+      if (result.user) {
+        // Update the user context
+        login(token, result.user as User);
+      }
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile changes have been saved successfully."
+      });
+    } catch (err: any) {
+      console.error('Profile update error:', err);
+      setError(err.message || 'An error occurred while updating your profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Placeholder for password update
+  const handleUpdatePassword = () => {
+    // Password validation
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    // Show success message for now (actual implementation would require backend support)
     toast({
-      title: "Profile updated",
-      description: "Your profile changes have been saved successfully."
+      title: "Password updated",
+      description: "Your password has been updated successfully."
+    });
+    
+    // Clear password fields
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
     });
   };
 
@@ -41,39 +148,70 @@ const Account = () => {
                 <CardDescription>Update your personal details and preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1 space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue="John" />
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue="Doe" />
-                  </div>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input 
+                    id="fullName" 
+                    value={formData.fullName} 
+                    onChange={handleInputChange} 
+                    disabled={loading}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={formData.email} 
+                    onChange={handleInputChange} 
+                    disabled={loading}
+                  />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input 
+                    id="phoneNumber" 
+                    value={formData.phoneNumber} 
+                    onChange={handleInputChange} 
+                    disabled={loading}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input id="dateOfBirth" type="date" defaultValue="1985-06-15" />
+                  <Input 
+                    id="dateOfBirth" 
+                    type="date" 
+                    value={formData.dateOfBirth} 
+                    onChange={handleInputChange} 
+                    disabled={loading}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="country">Country of Residence</Label>
-                  <Input id="country" defaultValue="United States" />
+                  <Input 
+                    id="country" 
+                    value={formData.country} 
+                    onChange={handleInputChange} 
+                    disabled={loading}
+                  />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveChanges}>Save Changes</Button>
+                <Button onClick={handleSaveChanges} disabled={loading}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </Button>
               </CardFooter>
             </Card>
             
@@ -120,23 +258,46 @@ const Account = () => {
                 <CardDescription>Update your password regularly for better security</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input id="currentPassword" type="password" />
+                  <Input 
+                    id="currentPassword" 
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" />
+                  <Input 
+                    id="newPassword" 
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input id="confirmPassword" type="password" />
+                  <Input 
+                    id="confirmPassword" 
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                  />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Update Password</Button>
+                <Button onClick={handleUpdatePassword}>Update Password</Button>
               </CardFooter>
             </Card>
             
@@ -151,17 +312,6 @@ const Account = () => {
                     <Shield className="h-8 w-8 text-green-500" />
                     <div>
                       <h4 className="font-medium">Authenticator App</h4>
-                      <p className="text-sm text-muted-foreground">Enabled • Last used 2 days ago</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">Manage</Button>
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-md">
-                  <div className="flex items-center gap-3">
-                    <Key className="h-8 w-8 text-amber-500" />
-                    <div>
-                      <h4 className="font-medium">Security Keys</h4>
                       <p className="text-sm text-muted-foreground">Not configured</p>
                     </div>
                   </div>
@@ -170,13 +320,13 @@ const Account = () => {
                 
                 <div className="flex items-center justify-between border p-4 rounded-md">
                   <div className="flex items-center gap-3">
-                    <Lock className="h-8 w-8 text-blue-500" />
+                    <Key className="h-8 w-8 text-amber-500" />
                     <div>
-                      <h4 className="font-medium">Recovery Codes</h4>
-                      <p className="text-sm text-muted-foreground">3 of 10 codes remaining</p>
+                      <h4 className="font-medium">SMS Authentication</h4>
+                      <p className="text-sm text-muted-foreground">Not configured</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">View Codes</Button>
+                  <Button variant="outline" size="sm">Setup</Button>
                 </div>
               </CardContent>
             </Card>
@@ -239,10 +389,6 @@ const Account = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-xs">SMS</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
                         <span className="text-xs">Push</span>
                       </div>
                     </div>
@@ -258,14 +404,6 @@ const Account = () => {
                         <CheckCircle className="h-4 w-4 text-green-500" />
                         <span className="text-xs">Email</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4 text-gray-300" />
-                        <span className="text-xs">SMS</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-xs">Push</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -275,17 +413,13 @@ const Account = () => {
                   
                   <div className="flex items-center justify-between border-b pb-2">
                     <div>
-                      <p className="font-medium">Order Execution</p>
-                      <p className="text-sm text-muted-foreground">Order filled, cancelled, or rejected</p>
+                      <p className="font-medium">Price Alerts</p>
+                      <p className="text-sm text-muted-foreground">Alerts for price changes in your watchlists</p>
                     </div>
                     <div className="flex gap-4">
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-4 w-4 text-green-500" />
                         <span className="text-xs">Email</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-xs">SMS</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-4 w-4 text-green-500" />
@@ -296,17 +430,13 @@ const Account = () => {
                   
                   <div className="flex items-center justify-between border-b pb-2">
                     <div>
-                      <p className="font-medium">Price Alerts</p>
-                      <p className="text-sm text-muted-foreground">When price reaches your set threshold</p>
+                      <p className="font-medium">Order Status</p>
+                      <p className="text-sm text-muted-foreground">Updates on your order status</p>
                     </div>
                     <div className="flex gap-4">
                       <div className="flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4 text-gray-300" />
-                        <span className="text-xs">Email</span>
-                      </div>
-                      <div className="flex items-center gap-1">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-xs">SMS</span>
+                        <span className="text-xs">Email</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-4 w-4 text-green-500" />
@@ -325,79 +455,50 @@ const Account = () => {
           <TabsContent value="verification" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Identity Verification</CardTitle>
-                <CardDescription>Verify your identity to unlock full trading features</CardDescription>
+                <CardTitle>Account Verification</CardTitle>
+                <CardDescription>Complete verification steps to unlock additional features</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4 flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-green-800">Basic Verification Complete</h4>
-                      <p className="text-sm text-green-700">Your email and phone number have been verified.</p>
+              <CardContent className="space-y-6">
+                <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
+                  <InfoIcon className="h-5 w-5 text-blue-500" />
+                  <AlertTitle>Verification Required</AlertTitle>
+                  <AlertDescription>
+                    Complete identity verification to unlock higher trading limits and additional features.
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="space-y-4 mt-4">
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center gap-3">
+                      <UserCircle className="h-8 w-8 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium">Basic Information</h4>
+                        <p className="text-sm text-green-600">Completed</p>
+                      </div>
                     </div>
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                   </div>
                   
-                  <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-amber-800">Advanced Verification In Progress</h4>
-                      <p className="text-sm text-amber-700">We're reviewing your submitted documents. This typically takes 1-3 business days.</p>
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="h-8 w-8 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium">Identity Verification</h4>
+                        <p className="text-sm text-muted-foreground">Required for trading</p>
+                      </div>
                     </div>
+                    <Button variant="outline" size="sm">Verify</Button>
                   </div>
                   
-                  <div className="border rounded-md">
-                    <div className="p-4 border-b">
-                      <h4 className="font-medium">Verification Steps</h4>
-                    </div>
-                    <div className="p-4 space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-green-100 text-green-800 rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">1</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">Basic Information</h5>
-                          <p className="text-sm text-muted-foreground">Personal details and contact information</p>
-                          <div className="mt-1 flex items-center text-green-600 text-sm">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Completed
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="bg-green-100 text-green-800 rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">2</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">ID Verification</h5>
-                          <p className="text-sm text-muted-foreground">Government-issued photo ID</p>
-                          <div className="mt-1 flex items-center text-green-600 text-sm">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Submitted
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="bg-amber-100 text-amber-800 rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">3</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">Proof of Address</h5>
-                          <p className="text-sm text-muted-foreground">Recent utility bill or bank statement</p>
-                          <div className="mt-1 flex items-center text-amber-600 text-sm">
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            Under Review
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="bg-gray-100 text-gray-400 rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">4</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-500">Financial Information</h5>
-                          <p className="text-sm text-muted-foreground">Income verification and investment experience</p>
-                          <div className="mt-1">
-                            <Button size="sm" disabled>Complete after step 3</Button>
-                          </div>
-                        </div>
+                  <div className="flex items-center justify-between border p-4 rounded-md">
+                    <div className="flex items-center gap-3">
+                      <Lock className="h-8 w-8 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium">Address Verification</h4>
+                        <p className="text-sm text-muted-foreground">Required for withdrawals</p>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm">Verify</Button>
                   </div>
                 </div>
               </CardContent>

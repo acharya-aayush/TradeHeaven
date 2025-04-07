@@ -1,9 +1,8 @@
-
 import { Transaction } from '@/services/walletService';
 
 // Format currency for display
 export const formatCurrency = (amount: number) => {
-  return `$${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+  return `Rs. ${amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
 };
 
 // Format date for display
@@ -82,12 +81,35 @@ export const generateBalanceHistory = (transactions: Transaction[], currentBalan
 
 // Get asset allocation data for pie chart
 export const getAssetAllocation = (balance?: number, collateralLocked?: number) => {
-  if (balance === undefined || collateralLocked === undefined) return [];
+  // Handle null, undefined, or invalid values
+  if (balance === undefined || collateralLocked === undefined || 
+      balance === null || collateralLocked === null ||
+      isNaN(balance) || isNaN(collateralLocked)) {
+    return [];
+  }
   
-  const availableBalance = balance - collateralLocked;
+  // Ensure positive values
+  const safeBalance = Math.max(0, balance);
+  const safeCollateralLocked = Math.max(0, collateralLocked);
   
+  // If there's no money at all, return empty array
+  if (safeBalance === 0) {
+    return [];
+  }
+  
+  // Calculate available balance (ensure it's not negative)
+  const availableBalance = Math.max(0, safeBalance - safeCollateralLocked);
+  
+  // If we only have available balance
+  if (safeCollateralLocked === 0) {
+    return [
+      { name: 'Available Balance', value: availableBalance }
+    ];
+  }
+  
+  // Normal case with both available and locked funds
   return [
     { name: 'Available Balance', value: availableBalance },
-    { name: 'Locked Collateral', value: collateralLocked }
+    { name: 'Locked Collateral', value: safeCollateralLocked }
   ];
 };

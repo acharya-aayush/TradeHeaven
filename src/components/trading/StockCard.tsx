@@ -24,7 +24,7 @@ const StockCard: React.FC<StockCardProps> = ({ stock, onClick }) => {
             <p className="text-sm text-muted-foreground truncate max-w-[150px]">{stock.name}</p>
           </div>
           <div className="text-right">
-            <p className="font-mono text-lg font-semibold">${stock.price.toFixed(2)}</p>
+            <p className="font-mono text-lg font-semibold">Rs. {stock.price.toFixed(2)}</p>
             <div className={`flex items-center justify-end text-sm ${
               isPositive ? 'text-market-up' : 'text-market-down'
             }`}>
@@ -43,11 +43,11 @@ const StockCard: React.FC<StockCardProps> = ({ stock, onClick }) => {
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
           <div>
             <span className="block">Vol</span>
-            <span className="font-medium text-foreground">{(stock.volume / 1000000).toFixed(1)}M</span>
+            <span className="font-medium text-foreground">{(stock.volume / 1000).toFixed(1)}K</span>
           </div>
           <div>
             <span className="block">Mkt Cap</span>
-            <span className="font-medium text-foreground">${(stock.marketCap / 1000000000).toFixed(1)}B</span>
+            <span className="font-medium text-foreground">Rs. {(stock.marketCap / 1000000).toFixed(1)}M</span>
           </div>
         </div>
       </CardContent>

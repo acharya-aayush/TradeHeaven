@@ -1,10 +1,13 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { WalletData } from '@/services/walletService';
 import { formatCurrency } from './WalletUtils';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface BalanceProps {
   wallet: WalletData | null;
@@ -13,6 +16,13 @@ interface BalanceProps {
 }
 
 export const Balance: React.FC<BalanceProps> = ({ wallet, balanceHistory, loading }) => {
+  const navigate = useNavigate();
+  const isZeroBalance = wallet && wallet.balance === 0;
+
+  const handleDepositClick = () => {
+    navigate('/wallet', { state: { activeTab: 'deposit' } });
+  };
+
   return (
     <Card className="md:col-span-2">
       <CardHeader className="pb-2">
@@ -42,6 +52,19 @@ export const Balance: React.FC<BalanceProps> = ({ wallet, balanceHistory, loadin
           )}
         </div>
         
+        {isZeroBalance && (
+          <Alert variant="default" className="mt-4 bg-yellow-50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>No Funds Available</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2">
+              <p>You currently have no funds in your account. Deposit funds to start trading.</p>
+              <Button onClick={handleDepositClick} variant="outline" size="sm">
+                Deposit Now
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <div className="h-[200px] mt-6 w-full overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={balanceHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -54,7 +77,7 @@ export const Balance: React.FC<BalanceProps> = ({ wallet, balanceHistory, loadin
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip formatter={(value) => [`$${value}`, 'Balance']} />
+              <Tooltip formatter={(value) => [`Rs. ${value}`, 'Balance']} />
               <Area 
                 type="monotone" 
                 dataKey="balance" 

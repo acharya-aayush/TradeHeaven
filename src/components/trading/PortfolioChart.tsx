@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -125,7 +124,7 @@ const PortfolioChart = () => {
               <div className="font-medium">
                 {((item.value / totalValue) * 100).toFixed(1)}% 
                 <span className="text-muted-foreground ml-2">
-                  (${item.value.toLocaleString()})
+                  (Rs. {item.value.toLocaleString()})
                 </span>
               </div>
             </div>
